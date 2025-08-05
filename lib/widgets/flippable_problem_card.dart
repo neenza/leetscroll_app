@@ -56,8 +56,9 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: _flip,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: SizedBox(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
         child: AnimatedBuilder(
           animation: _flipAnimation,
           builder: (context, child) {
@@ -255,30 +256,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
               ),
             ),
 
-            // Tap to flip hint
-            Container(
-              padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.only(top: 16),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue.shade200),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.touch_app, color: Colors.blue.shade600, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Tap to see solution',
-                    style: TextStyle(
-                      color: Colors.blue.shade600,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            // ...existing code...
           ],
         ),
       ),

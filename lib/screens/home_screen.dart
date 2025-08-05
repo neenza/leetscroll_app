@@ -84,6 +84,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
+      appBar: AppBar(
+        title: const Text('LeetScroll', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        elevation: 2,
+        centerTitle: false,
+        titleTextStyle: Theme.of(context).textTheme.headlineSmall?.copyWith(
+          fontWeight: FontWeight.bold,
+          color: Colors.grey.shade800,
+          letterSpacing: 1.2,
+        ),
+      ),
       body: _isLoading
           ? _buildLoadingState()
           : _filteredProblems.isEmpty
@@ -175,49 +186,11 @@ class _HomeScreenState extends State<HomeScreen> {
           itemCount: _filteredProblems.length,
           itemBuilder: (context, index) {
             final problem = _filteredProblems[index];
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: FlippableProblemCard(problem: problem),
-            );
+            return FlippableProblemCard(problem: problem);
           },
         ),
 
-        // Top status bar
-        SafeArea(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Row(
-              children: [
-                // App title
-                Text(
-                  'LeetScroll',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade800,
-                  ),
-                ),
-                const Spacer(),
-
-                // Progress indicator
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '${_currentIndex + 1} / ${_filteredProblems.length}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        // ...existing code...
 
         // Current filters indicator
         if (_selectedDifficulty != 'All' || _selectedTopic != 'All')
@@ -288,52 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
           right: 20,
           child: Row(
             children: [
-              // Swipe hint
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.swipe_vertical, color: Colors.white, size: 16),
-                    SizedBox(width: 6),
-                    Text(
-                      'Swipe up/down',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-
-              // Flip hint
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.touch_app, color: Colors.white, size: 16),
-                    SizedBox(width: 6),
-                    Text(
-                      'Tap to flip',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              // ...existing code...
             ],
           ),
         ),
