@@ -23,7 +23,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 350),
       vsync: this,
     );
     _flipAnimation = Tween<double>(
@@ -56,6 +56,12 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: _flip,
+      onHorizontalDragEnd: (details) {
+        // Only flip if swipe is significant
+        if (details.primaryVelocity != null && details.primaryVelocity!.abs() > 200) {
+          _flip();
+        }
+      },
       child: SizedBox(
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
