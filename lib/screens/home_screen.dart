@@ -1,0 +1,343 @@
+import 'package:flutter/material.dart';
+import '../models/leetcode_problem.dart';
+import '../services/problems_service.dart';
+import '../widgets/flippable_problem_card.dart';
+import '../widgets/filter_widget.dart';
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  PageController _pageController = PageController();
+  List<LeetCodeProblem> _problems = [];
+  List<LeetCodeProblem> _filteredProblems = [];
+  bool _isLoading = true;
+  String _selectedDifficulty = 'All';
+  String _selectedTopic = 'All';
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProblems();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadProblems() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    await ProblemsService.loadProblems();
+    
+    setState(() {
+      _problems = ProblemsService.getAllProblems();
+      _filteredProblems = _problems;
+      _isLoading = false;
+    });
+  }
+
+  void _applyFilters(String difficulty, String topic) {
+    setState(() {
+      _selectedDifficulty = difficulty;
+      _selectedTopic = topic;
+      _filteredProblems = ProblemsService.getFilteredProblems(
+        difficulty: difficulty == 'All' ? null : difficulty,
+        topic: topic == 'All' ? null : topic,
+      );
+      _currentIndex = 0;
+    });
+    
+    // Jump to first problem after filtering
+    if (_filteredProblems.isNotEmpty) {
+      _pageController.animateToPage(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void _showFilterBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => FilterWidget(
+        selectedDifficulty: _selectedDifficulty,
+        selectedTopic: _selectedTopic,
+        onFiltersChanged: _applyFilters,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey.shade100,
+      body: _isLoading
+          ? _buildLoadingState()
+          : _filteredProblems.isEmpty
+              ? _buildEmptyState()
+              : _buildProblemsView(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showFilterBottomSheet,
+        backgroundColor: Colors.blue.shade600,
+        child: const Icon(Icons.filter_list, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(),
+          SizedBox(height: 16),
+          Text(
+            'Loading LeetCode Problems...',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.search_off,
+            size: 64,
+            color: Colors.grey.shade400,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No problems found',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Try adjusting your filters',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade500,
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: () {
+              _applyFilters('All', 'All');
+            },
+            icon: const Icon(Icons.refresh),
+            label: const Text('Reset Filters'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue.shade600,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProblemsView() {
+    return Stack(
+      children: [
+        // Main problems view
+        PageView.builder(
+          controller: _pageController,
+          scrollDirection: Axis.vertical,
+          onPageChanged: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          itemCount: _filteredProblems.length,
+          itemBuilder: (context, index) {
+            final problem = _filteredProblems[index];
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: FlippableProblemCard(problem: problem),
+            );
+          },
+        ),
+
+        // Top status bar
+        SafeArea(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Row(
+              children: [
+                // App title
+                Text(
+                  'LeetScroll',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade800,
+                  ),
+                ),
+                const Spacer(),
+
+                // Progress indicator
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    '${_currentIndex + 1} / ${_filteredProblems.length}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Current filters indicator
+        if (_selectedDifficulty != 'All' || _selectedTopic != 'All')
+          Positioned(
+            top: 100,
+            left: 20,
+            right: 20,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade600.withOpacity(0.9),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.filter_list, color: Colors.white, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Filters: ${_selectedDifficulty != 'All' ? _selectedDifficulty : ''}${_selectedDifficulty != 'All' && _selectedTopic != 'All' ? ' • ' : ''}${_selectedTopic != 'All' ? _selectedTopic : ''}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => _applyFilters('All', 'All'),
+                    child: const Icon(Icons.close, color: Colors.white, size: 16),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+        // Side progress indicator
+        Positioned(
+          right: 20,
+          top: 150,
+          bottom: 100,
+          child: Container(
+            width: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(2),
+            ),
+            child: FractionallySizedBox(
+              alignment: Alignment.topCenter,
+              heightFactor: (_currentIndex + 1) / _filteredProblems.length,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade600,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        // Navigation hints
+        Positioned(
+          bottom: 40,
+          left: 20,
+          right: 20,
+          child: Row(
+            children: [
+              // Swipe hint
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.swipe_vertical, color: Colors.white, size: 16),
+                    SizedBox(width: 6),
+                    Text(
+                      'Swipe up/down',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // Flip hint
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.touch_app, color: Colors.white, size: 16),
+                    SizedBox(width: 6),
+                    Text(
+                      'Tap to flip',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
