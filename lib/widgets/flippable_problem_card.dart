@@ -195,13 +195,21 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      widget.problem.description,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        height: 1.5,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
+                    // Remove unwanted lines from description
+                    ...widget.problem.description
+                        .split('\n')
+                        .where((line) =>
+                          !line.trim().startsWith('Example 1:') &&
+                          !line.trim().startsWith('Example 2:') &&
+                          !line.trim().startsWith('Example 3:') &&
+                          !line.trim().startsWith('Constraints:'))
+                        .map((line) => Text(
+                              line,
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                height: 1.5,
+                                color: Colors.grey.shade600,
+                              ),
+                            )),
                     const SizedBox(height: 16),
 
                     // Examples
@@ -215,6 +223,15 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                       ),
                       const SizedBox(height: 8),
                       ...widget.problem.examples.map((example) {
+                        // Remove unwanted lines from example text
+                        final filteredExample = example.exampleText
+                            .split('\n')
+                            .where((line) =>
+                              !line.trim().startsWith('Example 1:') &&
+                              !line.trim().startsWith('Example 2:') &&
+                              !line.trim().startsWith('Example 3:') &&
+                              !line.trim().startsWith('Constraints:'))
+                            .join('\n');
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(12),
@@ -224,7 +241,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                             border: Border.all(color: Colors.grey.shade300),
                           ),
                           child: Text(
-                            example.exampleText,
+                            filteredExample,
                             style: const TextStyle(
                               fontFamily: 'monospace',
                               fontSize: 13,
