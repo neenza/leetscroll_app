@@ -18,14 +18,19 @@ class FilterWidget extends StatefulWidget {
 }
 
 class _FilterWidgetState extends State<FilterWidget> {
-  late String _selectedDifficulty;
-  late String _selectedTopic;
+late String _selectedDifficulty;
+late Set<String> _selectedTopics;
 
   @override
   void initState() {
     super.initState();
     _selectedDifficulty = widget.selectedDifficulty;
-    _selectedTopic = widget.selectedTopic;
+    // Support legacy single topic selection for backward compatibility
+    if (widget.selectedTopic == 'All') {
+      _selectedTopics = <String>{};
+    } else {
+      _selectedTopics = {widget.selectedTopic};
+    }
   }
 
   @override
@@ -98,7 +103,8 @@ class _FilterWidgetState extends State<FilterWidget> {
                     setState(() {
                       _selectedDifficulty = difficulty;
                     });
-                    widget.onFiltersChanged(_selectedDifficulty, _selectedTopic);
+                    final topicsStr = _selectedTopics.isEmpty ? 'All' : _selectedTopics.join(',');
+                    widget.onFiltersChanged(_selectedDifficulty, topicsStr);
                   },
                   child: Container(
                     margin: const EdgeInsets.only(right: 8),
@@ -144,13 +150,19 @@ class _FilterWidgetState extends State<FilterWidget> {
                 spacing: 8,
                 runSpacing: 4,
                 children: ProblemsService.getAllTopics().map((topic) {
-                  final isSelected = _selectedTopic == topic;
+                  final isSelected = _selectedTopics.contains(topic);
                   return GestureDetector(
                     onTap: () {
                       setState(() {
-                        _selectedTopic = topic;
+                        if (isSelected) {
+                          _selectedTopics.remove(topic);
+                        } else {
+                          _selectedTopics.add(topic);
+                        }
                       });
-                      widget.onFiltersChanged(_selectedDifficulty, _selectedTopic);
+                      // Pass as comma-separated string for compatibility, or empty string for 'All'
+                      final topicsStr = _selectedTopics.isEmpty ? 'All' : _selectedTopics.join(',');
+                      widget.onFiltersChanged(_selectedDifficulty, topicsStr);
                     },
                     child: Chip(
                       label: Text(
@@ -205,7 +217,7 @@ class _FilterWidgetState extends State<FilterWidget> {
               onPressed: () {
                 setState(() {
                   _selectedDifficulty = 'All';
-                  _selectedTopic = 'All';
+                  _selectedTopics.clear();
                 });
                 widget.onFiltersChanged('All', 'All');
                 Navigator.pop(context);

@@ -61,10 +61,11 @@ class ProblemsService {
     }
 
     if (topic != null && topic != 'All') {
-      filtered = filtered
-          .where((problem) => problem.topics
-              .any((t) => t.toLowerCase().contains(topic.toLowerCase())))
-          .toList();
+      // Multi-topic AND filtering: only include problems that contain ALL selected topics
+      final topicList = topic.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty).toList();
+      if (topicList.isNotEmpty) {
+        filtered = filtered.where((problem) => topicList.every((t) => problem.topics.map((pt) => pt.toLowerCase()).contains(t.toLowerCase()))).toList();
+      }
     }
 
     return filtered;
