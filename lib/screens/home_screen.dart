@@ -231,28 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
 
         // Side progress indicator
-        Positioned(
-          right: 20,
-          top: 150,
-          bottom: 100,
-          child: Container(
-            width: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(2),
-            ),
-            child: FractionallySizedBox(
-              alignment: Alignment.topCenter,
-              heightFactor: (_currentIndex + 1) / _filteredProblems.length,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade600,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-          ),
-        ),
+        // Removed
 
         // Navigation hints
         Positioned(
