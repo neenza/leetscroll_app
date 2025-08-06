@@ -45,14 +45,18 @@ class _FlippableProblemCardState extends State<FlippableProblemCard> with Single
         isUser: true,
         timestamp: DateTime.now(),
       ));
-      // Optionally, add a stub AI response
-      // _chatMessages.add(_ChatMessage(
-      //   text: 'AI will answer here (coming soon!)',
-      //   isUser: false,
-      //   timestamp: DateTime.now(),
-      // ));
     });
     _chatController.clear();
+    // Add a demo AI response after a short delay
+    Future.delayed(const Duration(milliseconds: 700), () {
+      setState(() {
+        _chatMessages.add(_ChatMessage(
+          text: 'This is a demo AI response. The real AI will answer here!',
+          isUser: false,
+          timestamp: DateTime.now(),
+        ));
+      });
+    });
   }
 
   @override
