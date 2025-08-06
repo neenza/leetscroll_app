@@ -20,6 +20,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool _isCardFront = true;
   PageController _pageController = PageController();
   List<LeetCodeProblem> _problems = [];
   List<LeetCodeProblem> _filteredProblems = [];
@@ -139,11 +140,13 @@ class _HomeScreenState extends State<HomeScreen> {
           : _filteredProblems.isEmpty
               ? _buildEmptyState()
               : _buildProblemsView(),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showFilterBottomSheet,
-        backgroundColor: Colors.blue.shade600,
-        child: const Icon(Icons.filter_list, color: Colors.white),
-      ),
+      floatingActionButton: _isCardFront
+          ? FloatingActionButton(
+              onPressed: _showFilterBottomSheet,
+              backgroundColor: Colors.blue.shade600,
+              child: const Icon(Icons.filter_list, color: Colors.white),
+            )
+          : null,
     );
   }
 
@@ -245,6 +248,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (mainIdx != -1) {
                       _problems[mainIdx].isSolved = value;
                     }
+                  });
+                },
+                onCardSideChanged: (bool isFront) {
+                  setState(() {
+                    _isCardFront = isFront;
                   });
                 },
               ),

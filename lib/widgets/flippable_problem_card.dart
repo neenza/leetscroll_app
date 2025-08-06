@@ -5,12 +5,14 @@ class FlippableProblemCard extends StatefulWidget {
   final LeetCodeProblem problem;
   final VoidCallback? onScrollToNext;
   final ValueChanged<bool>? onSolvedChanged;
+  final ValueChanged<bool>? onCardSideChanged;
 
   const FlippableProblemCard({
     super.key,
     required this.problem,
     this.onScrollToNext,
     this.onSolvedChanged,
+    this.onCardSideChanged,
   });
 
   @override
@@ -40,6 +42,10 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
       curve: Curves.easeInOut,
     ));
     _scrollController = ScrollController();
+    // Notify parent of initial side (front)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.onCardSideChanged?.call(true);
+    });
   }
 
   @override
@@ -57,6 +63,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
     }
     setState(() {
       _isShowingSolution = !_isShowingSolution;
+      widget.onCardSideChanged?.call(!_isShowingSolution);
     });
   }
 
