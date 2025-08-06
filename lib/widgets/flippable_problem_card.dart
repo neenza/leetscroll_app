@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
 import '../models/leetcode_problem.dart';
 
+// Simple chat message model
+class _ChatMessage {
+  final String text;
+  final bool isUser;
+  final DateTime timestamp;
+  _ChatMessage({required this.text, required this.isUser, required this.timestamp});
+}
+
 class FlippableProblemCard extends StatefulWidget {
   final LeetCodeProblem problem;
   final VoidCallback? onScrollToNext;
@@ -19,13 +27,33 @@ class FlippableProblemCard extends StatefulWidget {
   State<FlippableProblemCard> createState() => _FlippableProblemCardState();
 }
 
-class _FlippableProblemCardState extends State<FlippableProblemCard>
-    with SingleTickerProviderStateMixin {
+class _FlippableProblemCardState extends State<FlippableProblemCard> with SingleTickerProviderStateMixin {
+  List<_ChatMessage> _chatMessages = [];
+  final TextEditingController _chatController = TextEditingController();
   late AnimationController _animationController;
   late Animation<double> _flipAnimation;
   late ScrollController _scrollController;
   bool _isShowingSolution = false;
   bool _hasReachedBottom = false;
+
+  void _sendChatMessage() {
+    final text = _chatController.text.trim();
+    if (text.isEmpty) return;
+    setState(() {
+      _chatMessages.add(_ChatMessage(
+        text: text,
+        isUser: true,
+        timestamp: DateTime.now(),
+      ));
+      // Optionally, add a stub AI response
+      // _chatMessages.add(_ChatMessage(
+      //   text: 'AI will answer here (coming soon!)',
+      //   isUser: false,
+      //   timestamp: DateTime.now(),
+      // ));
+    });
+    _chatController.clear();
+  }
 
   @override
   void initState() {
@@ -52,6 +80,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
   void dispose() {
     _animationController.dispose();
     _scrollController.dispose();
+    _chatController.dispose();
     super.dispose();
   }
 
@@ -564,126 +593,87 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
           ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
+            // Chat header
             Row(
               children: [
-                Icon(Icons.lightbulb, color: colorScheme.secondary),
+                Icon(Icons.chat_bubble_outline, color: colorScheme.secondary),
                 const SizedBox(width: 8),
                 Text(
-                  'Solution',
+                  'Ask AI',
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: colorScheme.secondary,
                   ),
                 ),
                 const Spacer(),
-                // Flip button removed; flip by swipe/tap
               ],
             ),
             const SizedBox(height: 16),
-
-            // Solution content
+            // Chat messages
             Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (widget.problem.solution != null) ...[
-                      Text(
-                        widget.problem.solution!,
+              child: _chatMessages.isEmpty
+                  ? Center(
+                      child: Text(
+                        'Ask anything about this problem!',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          height: 1.5,
-                          color: colorScheme.onSurface.withOpacity(0.8),
+                          color: colorScheme.onSurface.withOpacity(0.6),
                         ),
+                        textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 20),
-                    ],
-
-                    // Code snippets
-                    if (widget.problem.codeSnippets.isNotEmpty) ...[
-                      Text(
-                        'Code Templates:',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.primary,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      ...widget.problem.codeSnippets.entries.map((entry) {
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: colorScheme.primaryContainer,
-                                  borderRadius: const BorderRadius.only(
-                                    topLeft: Radius.circular(8),
-                                    topRight: Radius.circular(8),
-                                  ),
-                                ),
-                                child: Text(
-                                  entry.key.toUpperCase(),
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    color: colorScheme.primary,
-                                    fontSize: 12,
-                                  ),
-                                ),
+                    )
+                  : ListView.builder(
+                      reverse: false,
+                      itemCount: _chatMessages.length,
+                      itemBuilder: (context, idx) {
+                        final msg = _chatMessages[idx];
+                        return Align(
+                          alignment: msg.isUser
+                              ? Alignment.centerRight
+                              : Alignment.centerLeft,
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: msg.isUser
+                                  ? colorScheme.primary.withOpacity(0.15)
+                                  : colorScheme.secondaryContainer,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              msg.text,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: msg.isUser
+                                    ? colorScheme.primary
+                                    : colorScheme.onSecondaryContainer,
                               ),
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: colorScheme.surfaceVariant,
-                                  borderRadius: const BorderRadius.only(
-                                    bottomLeft: Radius.circular(8),
-                                    bottomRight: Radius.circular(8),
-                                  ),
-                                ),
-                                child: Text(
-                                  entry.value,
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    fontFamily: 'monospace',
-                                    color: colorScheme.onSurface,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         );
-                      }).toList(),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-
-            // Tap to flip back hint
-            Container(
-              padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.only(top: 16),
-              decoration: BoxDecoration(
-                color: colorScheme.secondaryContainer,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: colorScheme.secondary.withOpacity(0.3)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.touch_app, color: colorScheme.secondary, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Tap to see problem',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.secondary,
-                      fontWeight: FontWeight.w500,
+                      },
                     ),
+            ),
+            // Input field
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _chatController,
+                      minLines: 1,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        hintText: 'Type your question...'
+                      ),
+                      onSubmitted: (_) => _sendChatMessage(),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: Icon(Icons.send, color: colorScheme.primary),
+                    onPressed: _sendChatMessage,
                   ),
                 ],
               ),
