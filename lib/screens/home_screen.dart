@@ -236,6 +236,17 @@ class _HomeScreenState extends State<HomeScreen> {
               child: FlippableProblemCard(
                 problem: _filteredProblems[index],
                 onScrollToNext: _navigateToNextProblem,
+                onSolvedChanged: (bool value) {
+                  setState(() {
+                    // Update in filtered list
+                    _filteredProblems[index].isSolved = value;
+                    // Also update in main problems list if needed
+                    final mainIdx = _problems.indexWhere((p) => p.frontendId == _filteredProblems[index].frontendId);
+                    if (mainIdx != -1) {
+                      _problems[mainIdx].isSolved = value;
+                    }
+                  });
+                },
               ),
             );
           },

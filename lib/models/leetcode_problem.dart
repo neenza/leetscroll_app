@@ -14,6 +14,7 @@ class LeetCodeProblem {
   final List<String> hints;
   final Map<String, String> codeSnippets;
   final String? solution;
+  bool isSolved;
 
   LeetCodeProblem({
     required this.title,
@@ -29,6 +30,7 @@ class LeetCodeProblem {
     required this.hints,
     required this.codeSnippets,
     this.solution,
+    this.isSolved = false,
   });
 
   factory LeetCodeProblem.fromJson(Map<String, dynamic> json) {
@@ -49,6 +51,7 @@ class LeetCodeProblem {
       hints: List<String>.from(json['hints'] ?? []),
       codeSnippets: Map<String, String>.from(json['code_snippets'] ?? {}),
       solution: json['solution'],
+      isSolved: json['is_solved'] ?? false,
     );
   }
 

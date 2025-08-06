@@ -4,11 +4,13 @@ import '../models/leetcode_problem.dart';
 class FlippableProblemCard extends StatefulWidget {
   final LeetCodeProblem problem;
   final VoidCallback? onScrollToNext;
+  final ValueChanged<bool>? onSolvedChanged;
 
   const FlippableProblemCard({
     super.key,
     required this.problem,
     this.onScrollToNext,
+    this.onSolvedChanged,
   });
 
   @override
@@ -186,6 +188,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   elevation: 0,
                 ),
+
                 SizedBox(width: 12),
                 Chip(
                   label: Text(
@@ -199,6 +202,33 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   elevation: 0,
                 ),
+                SizedBox(width: 12),
+                FilterChip(
+                  label: Text(
+                    widget.problem.isSolved ? 'Solved' : 'Not Solved',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: widget.problem.isSolved
+                          ? colorScheme.onPrimaryContainer
+                          : colorScheme.onSurface,
+                    ),
+                  ),
+                  selected: widget.problem.isSolved,
+                  onSelected: (bool value) {
+                    widget.onSolvedChanged?.call(value);
+                  },
+                  showCheckmark: widget.problem.isSolved,
+                  checkmarkColor: colorScheme.primary,
+                  backgroundColor: widget.problem.isSolved
+                      ? colorScheme.primaryContainer
+                      : colorScheme.surfaceVariant,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  elevation: 0,
+                  disabledColor: widget.problem.isSolved
+                      ? colorScheme.primaryContainer
+                      : colorScheme.surfaceVariant,
+                ),
+
                 Spacer(),
                 IconButton(
                   onPressed: () {
