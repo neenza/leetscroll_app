@@ -18,6 +18,16 @@ class FilterWidget extends StatefulWidget {
 }
 
 class _FilterWidgetState extends State<FilterWidget> {
+  late String _selectedDifficulty;
+  late String _selectedTopic;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDifficulty = widget.selectedDifficulty;
+    _selectedTopic = widget.selectedTopic;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -82,27 +92,35 @@ class _FilterWidgetState extends State<FilterWidget> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: ProblemsService.getAllDifficulties().map((difficulty) {
-                final isSelected = widget.selectedDifficulty == difficulty;
-                return Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  child: Chip(
-                    label: Text(
-                      difficulty,
-                      style: TextStyle(
-                        color: isSelected 
-                            ? _getDifficultyColor(difficulty)
-                            : Colors.grey.shade600,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                final isSelected = _selectedDifficulty == difficulty;
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedDifficulty = difficulty;
+                    });
+                    widget.onFiltersChanged(_selectedDifficulty, _selectedTopic);
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    child: Chip(
+                      label: Text(
+                        difficulty,
+                        style: TextStyle(
+                          color: isSelected 
+                              ? _getDifficultyColor(difficulty)
+                              : Colors.grey.shade600,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        ),
                       ),
+                      backgroundColor: isSelected
+                          ? _getDifficultyColor(difficulty).withOpacity(0.2)
+                          : Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(color: _getDifficultyColor(difficulty)),
+                      ),
+                      elevation: 0,
                     ),
-                    backgroundColor: isSelected
-                        ? _getDifficultyColor(difficulty).withOpacity(0.2)
-                        : Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: BorderSide(color: _getDifficultyColor(difficulty)),
-                    ),
-                    elevation: 0,
                   ),
                 );
               }).toList(),
@@ -126,10 +144,13 @@ class _FilterWidgetState extends State<FilterWidget> {
                 spacing: 8,
                 runSpacing: 4,
                 children: ProblemsService.getAllTopics().map((topic) {
-                  final isSelected = widget.selectedTopic == topic;
+                  final isSelected = _selectedTopic == topic;
                   return GestureDetector(
                     onTap: () {
-                      widget.onFiltersChanged(widget.selectedDifficulty, topic);
+                      setState(() {
+                        _selectedTopic = topic;
+                      });
+                      widget.onFiltersChanged(_selectedDifficulty, _selectedTopic);
                     },
                     child: Chip(
                       label: Text(
@@ -182,6 +203,10 @@ class _FilterWidgetState extends State<FilterWidget> {
             width: double.infinity,
             child: TextButton.icon(
               onPressed: () {
+                setState(() {
+                  _selectedDifficulty = 'All';
+                  _selectedTopic = 'All';
+                });
                 widget.onFiltersChanged('All', 'All');
                 Navigator.pop(context);
               },
