@@ -85,21 +85,24 @@ class _FilterWidgetState extends State<FilterWidget> {
                 final isSelected = widget.selectedDifficulty == difficulty;
                 return Container(
                   margin: const EdgeInsets.only(right: 8),
-                  child: FilterChip(
-                    label: Text(difficulty),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      widget.onFiltersChanged(difficulty, widget.selectedTopic);
-                    },
-                    backgroundColor: Colors.transparent,
-                    selectedColor: _getDifficultyColor(difficulty).withOpacity(0.2),
-                    side: BorderSide(color: _getDifficultyColor(difficulty)),
-                    labelStyle: TextStyle(
-                      color: isSelected 
-                          ? _getDifficultyColor(difficulty)
-                          : Colors.grey.shade600,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  child: Chip(
+                    label: Text(
+                      difficulty,
+                      style: TextStyle(
+                        color: isSelected 
+                            ? _getDifficultyColor(difficulty)
+                            : Colors.grey.shade600,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      ),
                     ),
+                    backgroundColor: isSelected
+                        ? _getDifficultyColor(difficulty).withOpacity(0.2)
+                        : Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      side: BorderSide(color: _getDifficultyColor(difficulty)),
+                    ),
+                    elevation: 0,
                   ),
                 );
               }).toList(),
@@ -124,23 +127,27 @@ class _FilterWidgetState extends State<FilterWidget> {
                 runSpacing: 4,
                 children: ProblemsService.getAllTopics().map((topic) {
                   final isSelected = widget.selectedTopic == topic;
-                  return FilterChip(
-                    label: Text(
-                      topic,
-                      style: TextStyle(fontSize: 12),
-                    ),
-                    selected: isSelected,
-                    onSelected: (selected) {
+                  return GestureDetector(
+                    onTap: () {
                       widget.onFiltersChanged(widget.selectedDifficulty, topic);
                     },
-                    backgroundColor: Colors.transparent,
-                    selectedColor: Colors.purple.shade100,
-                    side: BorderSide(
-                      color: isSelected ? Colors.purple.shade400 : Colors.grey.shade400,
-                    ),
-                    labelStyle: TextStyle(
-                      color: isSelected ? Colors.purple.shade700 : Colors.grey.shade600,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    child: Chip(
+                      label: Text(
+                        topic,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isSelected ? Colors.purple.shade700 : Colors.grey.shade600,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                      backgroundColor: isSelected
+                          ? Colors.purple.shade100
+                          : Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: BorderSide(color: isSelected ? Colors.purple.shade400 : Colors.grey.shade400),
+                      ),
+                      elevation: 0,
                     ),
                   );
                 }).toList(),

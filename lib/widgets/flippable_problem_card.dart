@@ -110,59 +110,50 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with problem number and difficulty
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade100,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
+                Chip(
+                  label: Text(
                     '#${widget.problem.frontendId}',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.blue,
                     ),
                   ),
+                  backgroundColor: Colors.blue.shade50,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  elevation: 0,
                 ),
-                const SizedBox(width: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: LeetCodeProblem.getDifficultyColor(widget.problem.difficulty).withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
+                SizedBox(width: 12),
+                Chip(
+                  label: Text(
                     widget.problem.difficulty,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: LeetCodeProblem.getDifficultyColor(widget.problem.difficulty),
                     ),
                   ),
+                  backgroundColor: LeetCodeProblem.getDifficultyColor(widget.problem.difficulty).withOpacity(0.1),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  elevation: 0,
                 ),
-                const Spacer(),
+                Spacer(),
                 IconButton(
                   onPressed: _flip,
-                  icon: const Icon(Icons.flip_to_back),
+                  icon: Icon(Icons.flip_to_back),
                   tooltip: 'Flip to see solution',
                 ),
               ],
             ),
             const SizedBox(height: 16),
-
-            // Problem title
             Text(
               widget.problem.title,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Colors.grey.shade800,
+              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade800,
               ),
             ),
             const SizedBox(height: 16),
-
-            // Topics
             if (widget.problem.topics.isNotEmpty) ...[
               Wrap(
                 spacing: 8,
@@ -171,10 +162,15 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                   return Chip(
                     label: Text(
                       topic,
-                      style: const TextStyle(fontSize: 12),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.purple,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     backgroundColor: Colors.purple.shade50,
-                    side: BorderSide(color: Colors.purple.shade200),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    elevation: 0,
                   );
                 }).toList(),
               ),
@@ -278,8 +274,6 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                 ),
               ),
             ),
-
-            // ...existing code...
           ],
         ),
       ),
