@@ -90,6 +90,8 @@ class FlippableProblemCard extends StatefulWidget {
 class _FlippableProblemCardState extends State<FlippableProblemCard> with SingleTickerProviderStateMixin {
   List<_ChatMessage> _chatMessages = [];
   final TextEditingController _chatController = TextEditingController();
+  final TextEditingController _apiKeyController = TextEditingController();
+  String? _userApiKey;
   late AnimationController _animationController;
   late Animation<double> _flipAnimation;
   late ScrollController _scrollController;
@@ -100,6 +102,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard> with Single
   void _showModelDialog() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    _apiKeyController.text = _userApiKey ?? '';
     showDialog(
       context: context,
       builder: (context) => _buildModelDialog(theme, colorScheme),
@@ -123,21 +126,49 @@ class _FlippableProblemCardState extends State<FlippableProblemCard> with Single
           ),
         ],
       ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          _buildModelOption('2.5-flash', 'Fast, lower cost, good for most use cases'),
-          SizedBox(height: 12),
-          _buildModelOption('2.5-pro', 'Higher quality, more capable, higher cost'),
-        ],
-      ),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text('Close'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            _buildModelOption('2.5-flash', 'Fast, lower cost, good for most use cases'),
+            SizedBox(height: 12),
+            _buildModelOption('2.5-pro', 'Higher quality, more capable, higher cost'),
+            SizedBox(height: 20),
+            Text('Gemini API Key:', style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+            SizedBox(height: 6),
+            TextField(
+              controller: _apiKeyController,
+              obscureText: true,
+              decoration: InputDecoration(
+                hintText: 'Paste your Gemini API key here',
+                border: OutlineInputBorder(),
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+              ),
+            ),
+            SizedBox(height: 8),
+            Row(
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      _userApiKey = _apiKeyController.text.trim().isEmpty ? null : _apiKeyController.text.trim();
+                    });
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('Save'),
+                ),
+                SizedBox(width: 12),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text('Close'),
+                ),
+              ],
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -215,10 +246,12 @@ class _FlippableProblemCardState extends State<FlippableProblemCard> with Single
     });
 
     try {
-      // Load API key from .env
-      final apiKey = dotenv.env['GEMINI_API_KEY'];
+      // Use user-provided API key if available, else .env
+      final apiKey = (_userApiKey != null && _userApiKey!.isNotEmpty)
+          ? _userApiKey
+          : dotenv.env['GEMINI_API_KEY'];
       if (apiKey == null || apiKey.isEmpty) {
-        throw Exception('Gemini API key not found. Please set GEMINI_API_KEY in your .env file.');
+        throw Exception('Gemini API key not found. Please paste your API key in the model dialog or set GEMINI_API_KEY in your .env file.');
       }
 
       // Prepare the context: problem JSON
@@ -274,7 +307,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard> with Single
           aiText = 'Gemini blocked this prompt: ' + data["promptFeedback"]["blockReason"];
         }
       } else {
-        aiText = 'Gemini API error: ${response.statusCode} ${response.reasonPhrase}';
+        aiText = 'Gemini API error: \\${response.statusCode} \\${response.reasonPhrase}';
       }
 
       setState(() {
@@ -290,7 +323,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard> with Single
       setState(() {
         _chatMessages.removeWhere((msg) => msg.text == '[AI is typing...]' && !msg.isUser);
         _chatMessages.add(_ChatMessage(
-          text: 'Error: ${e.toString()}',
+          text: 'Error: \\${e.toString()}',
           isUser: false,
           timestamp: DateTime.now(),
         ));
