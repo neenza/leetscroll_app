@@ -62,30 +62,59 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
     // Only handle scroll notifications when showing the problem side
     if (_isShowingSolution) return false;
     
+    // Use a small threshold to account for floating point precision
+    final threshold = 1.0;
+    final isAtBottom = _scrollController.position.pixels >= 
+        (_scrollController.position.maxScrollExtent - threshold);
+    
+    if (notification is ScrollEndNotification) {
+      // User has finished scrolling
+      if (isAtBottom) {
+        // Mark that user has reached bottom and finished scrolling
+        _hasReachedBottom = true;
+        print('DEBUG: User reached bottom, _hasReachedBottom = true');
+      }
+      return false; // Don't consume the event
+    }
+    
     if (notification is ScrollUpdateNotification) {
-      // Use a small threshold to account for floating point precision
-      final threshold = 2.0;
-      final isAtBottom = _scrollController.position.pixels >= 
-          (_scrollController.position.maxScrollExtent - threshold);
       final isScrollingDown = notification.scrollDelta != null && notification.scrollDelta! > 0;
       
-      if (isAtBottom && isScrollingDown) {
-        if (_hasReachedBottom) {
-          // User has already reached bottom before and is scrolling down again
-          // Now trigger the next card
+      print('DEBUG: ScrollUpdate - isAtBottom: $isAtBottom, isScrollingDown: $isScrollingDown, _hasReachedBottom: $_hasReachedBottom, scrollDelta: ${notification.scrollDelta}');
+      
+      if (isAtBottom && _hasReachedBottom) {
+        // User is at bottom and has previously reached bottom
+        // Any scroll attempt (even if delta is 0) should trigger next card
+        if (notification.scrollDelta != null && notification.scrollDelta! >= 0) {
+          print('DEBUG: Triggering next card');
           widget.onScrollToNext?.call();
           _hasReachedBottom = false; // Reset for next time
           return true; // Consume the event
-        } else {
-          // First time reaching bottom, just mark it
-          _hasReachedBottom = true;
-          return true; // Consume the event to prevent further scrolling
         }
-      } else if (!isAtBottom) {
-        // Reset if user scrolls back up from bottom
+      }
+      
+      if (!isAtBottom) {
+        // Reset if user scrolls away from bottom
+        if (_hasReachedBottom) {
+          print('DEBUG: User scrolled away from bottom, resetting flag');
+        }
         _hasReachedBottom = false;
       }
     }
+    
+    // Also check for OverscrollNotification - this fires when trying to scroll beyond bounds
+    if (notification is OverscrollNotification) {
+      final isScrollingDown = notification.overscroll > 0;
+      print('DEBUG: Overscroll detected - overscroll: ${notification.overscroll}, _hasReachedBottom: $_hasReachedBottom');
+      
+      if (isScrollingDown && _hasReachedBottom) {
+        print('DEBUG: Triggering next card via overscroll');
+        widget.onScrollToNext?.call();
+        _hasReachedBottom = false; // Reset for next time
+        return true; // Consume the event
+      }
+    }
+    
     return false; // Don't consume the event
   }
 
