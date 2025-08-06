@@ -34,6 +34,10 @@ dependencies:
   http: ^1.1.0
   flutter_markdown: ^0.6.18
 
+  # For syntax highlighting in markdown code blocks
+  flutter_highlight: ^0.7.0
+  highlight: ^0.7.0
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8

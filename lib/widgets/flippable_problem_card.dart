@@ -2,8 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_highlight/flutter_highlight.dart';
+import 'package:flutter_highlight/themes/atom-one-dark.dart';
+import 'package:markdown/markdown.dart' as md;
 import 'dart:convert';
 import '../models/leetcode_problem.dart';
+
+// Custom builder for syntax-highlighted code blocks (C++)
+class CodeElementBuilder extends MarkdownElementBuilder {
+  @override
+  Widget? visitElementAfter(md.Element element, TextStyle? preferredStyle) {
+    // Try to get language from code block, default to cpp
+    String language = 'cpp';
+    if (element.attributes['class'] != null) {
+      final classAttr = element.attributes['class'] as String;
+      if (classAttr.startsWith('language-')) {
+        language = classAttr.substring(9);
+      }
+    }
+    return HighlightView(
+      element.textContent,
+      language: language,
+      theme: atomOneDarkTheme,
+      padding: const EdgeInsets.all(8),
+      textStyle: const TextStyle(
+        fontFamily: 'monospace',
+        fontSize: 14,
+      ),
+    );
+  }
+}
+
 
 // Simple chat message model
 class _ChatMessage {
@@ -749,11 +778,10 @@ class _FlippableProblemCardState extends State<FlippableProblemCard> with Single
                                       p: theme.textTheme.bodyMedium?.copyWith(
                                         color: colorScheme.onSecondaryContainer,
                                       ),
-                                      code: theme.textTheme.bodySmall?.copyWith(
-                                        fontFamily: 'monospace',
-                                        color: colorScheme.primary,
-                                      ),
                                     ),
+                                    builders: {
+                                      'code': CodeElementBuilder(),
+                                    },
                                   ),
                           ),
                         );
