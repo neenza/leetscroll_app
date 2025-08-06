@@ -397,33 +397,55 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                         ),
                       ),
                       const SizedBox(height: 8),
-                      ...widget.problem.examples.map((example) {
-                        // Remove unwanted lines from example text
-                        final filteredExample = example.exampleText
-                            .split('\n')
-                            .where((line) =>
-                              !line.trim().startsWith('Example 1:') &&
-                              !line.trim().startsWith('Example 2:') &&
-                              !line.trim().startsWith('Example 3:') &&
-                              !line.trim().startsWith('Constraints:'))
-                            .join('\n');
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: colorScheme.surfaceVariant,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: colorScheme.outline.withOpacity(0.3)),
-                          ),
-                          child: Text(
-                            filteredExample,
-                            style: const TextStyle(
-                              fontFamily: 'monospace',
-                              fontSize: 13,
+                    ...widget.problem.examples.map((example) {
+                      final filteredExample = example.exampleText
+                          .split('\n')
+                          .where((line) =>
+                            !line.trim().startsWith('Example 1:') &&
+                            !line.trim().startsWith('Example 2:') &&
+                            !line.trim().startsWith('Example 3:') &&
+                            !line.trim().startsWith('Constraints:'))
+                          .join('\n');
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surfaceVariant,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: colorScheme.outline.withOpacity(0.3)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              filteredExample,
+                              style: const TextStyle(
+                                fontFamily: 'monospace',
+                                fontSize: 13,
+                              ),
                             ),
-                          ),
-                        );
-                      }).toList(),
+                            if (example.images.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              ...example.images.map((imgUrl) => Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.network(
+                                    imgUrl,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (context, error, stackTrace) => Container(
+                                      color: Colors.grey.shade200,
+                                      height: 120,
+                                      child: Center(child: Icon(Icons.broken_image, color: Colors.grey)),
+                                    ),
+                                  ),
+                                ),
+                              ))
+                            ],
+                          ],
+                        ),
+                      );
+                    }).toList(),
                     ],
 
                     // Constraints
