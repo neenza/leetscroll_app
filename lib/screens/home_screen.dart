@@ -194,26 +194,25 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildProblemsView() {
     return Stack(
       children: [
-        // Main problems view with top padding for AppBar
-        Padding(
-          padding: const EdgeInsets.only(top: 84.0), // AppBar height
-          child: PageView.builder(
-            controller: _pageController,
-            scrollDirection: Axis.vertical,
-            onPageChanged: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-            itemCount: _filteredProblems.length,
-            itemBuilder: (context, index) {
-              final problem = _filteredProblems[index];
-              return FlippableProblemCard(
-                problem: problem,
+        // Main problems view without top padding or SafeArea
+        PageView.builder(
+          controller: _pageController,
+          scrollDirection: Axis.vertical,
+          onPageChanged: (index) {
+            setState(() {
+              _currentIndex = index;
+            });
+          },
+          itemCount: _filteredProblems.length,
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.only(top: 84),
+              child: FlippableProblemCard(
+                problem: _filteredProblems[index],
                 onScrollToNext: _navigateToNextProblem,
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
 
         // Current filters indicator
