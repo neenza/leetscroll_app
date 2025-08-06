@@ -80,6 +80,16 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _navigateToNextProblem() {
+    if (_currentIndex < _filteredProblems.length - 1) {
+      _pageController.animateToPage(
+        _currentIndex + 1,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -186,7 +196,10 @@ class _HomeScreenState extends State<HomeScreen> {
           itemCount: _filteredProblems.length,
           itemBuilder: (context, index) {
             final problem = _filteredProblems[index];
-            return FlippableProblemCard(problem: problem);
+            return FlippableProblemCard(
+              problem: problem,
+              onScrollToNext: _navigateToNextProblem,
+            );
           },
         ),
 

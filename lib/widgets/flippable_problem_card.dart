@@ -3,10 +3,12 @@ import '../models/leetcode_problem.dart';
 
 class FlippableProblemCard extends StatefulWidget {
   final LeetCodeProblem problem;
+  final VoidCallback? onScrollToNext;
 
   const FlippableProblemCard({
     super.key,
     required this.problem,
+    this.onScrollToNext,
   });
 
   @override
@@ -17,7 +19,9 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _flipAnimation;
+  late ScrollController _scrollController;
   bool _isShowingSolution = false;
+  bool _hasReachedBottom = false;
 
   @override
   void initState() {
@@ -33,11 +37,13 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
       parent: _animationController,
       curve: Curves.easeInOut,
     ));
+    _scrollController = ScrollController();
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -50,6 +56,37 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
     setState(() {
       _isShowingSolution = !_isShowingSolution;
     });
+  }
+
+  bool _onScrollNotification(ScrollNotification notification) {
+    // Only handle scroll notifications when showing the problem side
+    if (_isShowingSolution) return false;
+    
+    if (notification is ScrollUpdateNotification) {
+      // Use a small threshold to account for floating point precision
+      final threshold = 2.0;
+      final isAtBottom = _scrollController.position.pixels >= 
+          (_scrollController.position.maxScrollExtent - threshold);
+      final isScrollingDown = notification.scrollDelta != null && notification.scrollDelta! > 0;
+      
+      if (isAtBottom && isScrollingDown) {
+        if (_hasReachedBottom) {
+          // User has already reached bottom before and is scrolling down again
+          // Now trigger the next card
+          widget.onScrollToNext?.call();
+          _hasReachedBottom = false; // Reset for next time
+          return true; // Consume the event
+        } else {
+          // First time reaching bottom, just mark it
+          _hasReachedBottom = true;
+          return true; // Consume the event to prevent further scrolling
+        }
+      } else if (!isAtBottom) {
+        // Reset if user scrolls back up from bottom
+        _hasReachedBottom = false;
+      }
+    }
+    return false; // Don't consume the event
   }
 
   @override
@@ -158,19 +195,22 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
 
             // Problem description
             Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Problem Description:',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade700,
+              child: NotificationListener<ScrollNotification>(
+                onNotification: _onScrollNotification,
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Problem Description:',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade700,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    // Remove unwanted lines from description
+                      const SizedBox(height: 8),
+                      // Remove unwanted lines from description
                     ...widget.problem.description
                         .split('\n')
                         .where((line) =>
@@ -281,6 +321,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                       const SizedBox(height: 16),
                     ],
                   ],
+                ),
                 ),
               ),
             ),
