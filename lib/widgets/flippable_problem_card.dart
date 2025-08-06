@@ -47,7 +47,7 @@ class CodeElementBuilder extends MarkdownElementBuilder {
             element.textContent,
             language: language,
             theme: transparentTheme,
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(2),
             textStyle: const TextStyle(
               fontFamily: 'monospace',
               fontSize: 10,
@@ -67,6 +67,7 @@ class _ChatMessage {
   final DateTime timestamp;
   _ChatMessage({required this.text, required this.isUser, required this.timestamp});
 }
+
 
 class FlippableProblemCard extends StatefulWidget {
   final LeetCodeProblem problem;
@@ -94,6 +95,103 @@ class _FlippableProblemCardState extends State<FlippableProblemCard> with Single
   late ScrollController _scrollController;
   bool _isShowingSolution = false;
   bool _hasReachedBottom = false;
+  String _selectedModel = "2.5-flash";
+
+  void _showModelDialog() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    showDialog(
+      context: context,
+      builder: (context) => _buildModelDialog(theme, colorScheme),
+    );
+  }
+
+  Widget _buildModelDialog(ThemeData theme, ColorScheme colorScheme) {
+    return AlertDialog(
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(Icons.memory, color: colorScheme.secondary),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Select Model',
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
+            ),
+          ),
+        ],
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          _buildModelOption('2.5-flash', 'Fast, lower cost, good for most use cases'),
+          SizedBox(height: 12),
+          _buildModelOption('2.5-pro', 'Higher quality, more capable, higher cost'),
+        ],
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text('Close'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildModelOption(String model, String description) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isSelected = _selectedModel == model;
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _selectedModel = model;
+        });
+        Navigator.of(context).pop();
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? colorScheme.secondaryContainer : colorScheme.surfaceVariant,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? colorScheme.secondary : colorScheme.outline.withOpacity(0.3),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+              color: isSelected ? colorScheme.secondary : colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(model, style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold)),
+                  Text(
+                    description,
+                    style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ...existing methods (copy all other methods and build functions here)...
+
 
   void _sendChatMessage() async {
     final text = _chatController.text.trim();
@@ -151,8 +249,8 @@ class _FlippableProblemCardState extends State<FlippableProblemCard> with Single
       // Add the new user message as the last entry
       // (already added above, so no need to add again)
 
-      // Gemini 2.5 Flash endpoint (official)
-      final url = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey');
+      // Use selected model in endpoint
+      final url = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-${_selectedModel}:generateContent?key=$apiKey');
 
       final requestBody = {
         "contents": contents
@@ -771,6 +869,24 @@ class _FlippableProblemCardState extends State<FlippableProblemCard> with Single
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: colorScheme.secondary,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Model chip
+                GestureDetector(
+                  onTap: _showModelDialog,
+                  child: Chip(
+                    label: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('Model', style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 4),
+                        Text(_selectedModel, style: theme.textTheme.labelSmall?.copyWith(fontSize: 11, color: colorScheme.secondary)),
+                      ],
+                    ),
+                    backgroundColor: colorScheme.secondaryContainer,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    elevation: 0,
                   ),
                 ),
                 const Spacer(),
