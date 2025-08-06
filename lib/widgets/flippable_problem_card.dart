@@ -145,7 +145,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 4),
             Text(
               widget.problem.title,
               style: Theme.of(context).textTheme.headlineLarge?.copyWith(
@@ -153,29 +153,8 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
               color: Colors.grey.shade800,
               ),
             ),
-            const SizedBox(height: 16),
-            if (widget.problem.topics.isNotEmpty) ...[
-              Wrap(
-                spacing: 8,
-                runSpacing: 4,
-                children: widget.problem.topics.map((topic) {
-                  return Chip(
-                    label: Text(
-                      topic,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.purple,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    backgroundColor: Colors.purple.shade50,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    elevation: 0,
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 16),
-            ],
+            const SizedBox(height: 24),
+
 
             // Problem description
             Expanded(
@@ -269,6 +248,37 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                           ),
                         );
                       }).toList(),
+                    ],
+
+                    const SizedBox(height: 16),
+                    if (widget.problem.topics.isNotEmpty) ...[
+                      Text(
+                        'Topics:',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade700,
+                        ),
+                      ),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        children: widget.problem.topics.map((topic) {
+                          return Chip(
+                            label: Text(
+                              topic,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.purple,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            backgroundColor: Colors.purple.shade50,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            elevation: 0,
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: 16),
                     ],
                   ],
                 ),
