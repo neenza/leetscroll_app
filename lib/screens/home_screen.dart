@@ -6,7 +6,14 @@ import '../widgets/flippable_problem_card.dart';
 import '../widgets/filter_widget.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final bool isDarkMode;
+  final VoidCallback? onToggleTheme;
+
+  const HomeScreen({
+    super.key,
+    this.isDarkMode = false,
+    this.onToggleTheme,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -102,7 +109,6 @@ class _HomeScreenState extends State<HomeScreen> {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
             child: AppBar(
-              title: const Text('LeetScroll', style: TextStyle(fontWeight: FontWeight.bold)),
               backgroundColor: Colors.white.withOpacity(0.2),
               elevation: 0,
               centerTitle: false,
@@ -110,6 +116,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontWeight: FontWeight.bold,
                 color: Colors.grey.shade800,
                 letterSpacing: 1.2,
+              ),
+              title: Row(
+                children: [
+                  const Text('LeetScroll', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const Spacer(),
+                  IconButton(
+                    icon: Icon(widget.isDarkMode ? Icons.wb_sunny : Icons.nightlight_round, color: Colors.grey.shade800),
+                    tooltip: widget.isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+                    onPressed: widget.onToggleTheme,
+                  ),
+                ],
               ),
             ),
           ),

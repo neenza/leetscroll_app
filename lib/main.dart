@@ -5,8 +5,21 @@ void main() {
   runApp(const LeetScrollApp());
 }
 
-class LeetScrollApp extends StatelessWidget {
+class LeetScrollApp extends StatefulWidget {
   const LeetScrollApp({super.key});
+
+  @override
+  State<LeetScrollApp> createState() => _LeetScrollAppState();
+}
+
+class _LeetScrollAppState extends State<LeetScrollApp> {
+  bool _isDarkMode = false;
+
+  void _toggleTheme() {
+    setState(() {
+      _isDarkMode = !_isDarkMode;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +52,37 @@ class LeetScrollApp extends StatelessWidget {
           elevation: 8,
         ),
       ),
-      home: const HomeScreen(),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+        fontFamily: 'SF Pro Display',
+        appBarTheme: const AppBarTheme(
+          centerTitle: true,
+          elevation: 0,
+        ),
+        cardTheme: CardThemeData(
+          elevation: 4,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        chipTheme: ChipThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          elevation: 8,
+        ),
+      ),
+      themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      home: HomeScreen(
+        isDarkMode: _isDarkMode,
+        onToggleTheme: _toggleTheme,
+      ),
     );
   }
 }
