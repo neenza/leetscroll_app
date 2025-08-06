@@ -159,8 +159,15 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
   Widget _buildProblemSide() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final shadowColor = isDark
+        ? colorScheme.primary.withOpacity(0.18)
+        : Colors.black.withOpacity(0.12);
+    final shadowColorTop = isDark
+        ? colorScheme.primary.withOpacity(0.12)
+        : Colors.black.withOpacity(0.08);
     return Card(
-      elevation: 8,
+      elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       color: colorScheme.surface,
       child: Container(
@@ -170,6 +177,20 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           color: colorScheme.surface,
+          boxShadow: [
+            BoxShadow(
+              color: shadowColor,
+              offset: Offset(0, 6),
+              blurRadius: 16,
+              spreadRadius: 0,
+            ),
+            BoxShadow(
+              color: shadowColorTop,
+              offset: Offset(0, -6),
+              blurRadius: 16,
+              spreadRadius: 0,
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -473,8 +494,15 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
   Widget _buildSolutionSide() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final shadowColor = isDark
+        ? colorScheme.primary.withOpacity(0.12)
+        : Colors.black.withOpacity(0.12);
+    final shadowColorTop = isDark
+        ? colorScheme.primary.withOpacity(0.08)
+        : Colors.black.withOpacity(0.08);
     return Card(
-      elevation: 8,
+      elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       color: colorScheme.surface,
       child: Container(
@@ -484,6 +512,20 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           color: colorScheme.surface,
+          boxShadow: [
+            BoxShadow(
+              color: shadowColor,
+              offset: Offset(0, 6),
+              blurRadius: 16,
+              spreadRadius: 0,
+            ),
+            BoxShadow(
+              color: shadowColorTop,
+              offset: Offset(0, -6),
+              blurRadius: 16,
+              spreadRadius: 0,
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
