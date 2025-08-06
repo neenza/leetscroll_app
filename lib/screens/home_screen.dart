@@ -100,21 +100,23 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: colorScheme.background,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(56.0),
         child: ClipRRect(
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
             child: AppBar(
-              backgroundColor: Colors.white.withOpacity(0.2),
+              backgroundColor: colorScheme.surface.withOpacity(0.2),
               elevation: 0,
               centerTitle: false,
-              titleTextStyle: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              titleTextStyle: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: Colors.grey.shade800,
+                color: colorScheme.onSurface,
                 letterSpacing: 1.2,
               ),
               title: Row(
@@ -122,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const Text('LeetScroll', style: TextStyle(fontWeight: FontWeight.bold)),
                   const Spacer(),
                   IconButton(
-                    icon: Icon(widget.isDarkMode ? Icons.wb_sunny : Icons.nightlight_round, color: Colors.grey.shade800),
+                    icon: Icon(widget.isDarkMode ? Icons.wb_sunny : Icons.nightlight_round, color: colorScheme.onSurface),
                     tooltip: widget.isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode',
                     onPressed: widget.onToggleTheme,
                   ),
@@ -146,17 +148,20 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildLoadingState() {
-    return const Center(
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
+          CircularProgressIndicator(color: colorScheme.primary),
+          const SizedBox(height: 16),
           Text(
             'Loading LeetCode Problems...',
-            style: TextStyle(
+            style: theme.textTheme.bodyMedium?.copyWith(
               fontSize: 16,
               fontWeight: FontWeight.w500,
+              color: colorScheme.onBackground,
             ),
           ),
         ],
@@ -165,6 +170,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildEmptyState() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -172,23 +179,23 @@ class _HomeScreenState extends State<HomeScreen> {
           Icon(
             Icons.search_off,
             size: 64,
-            color: Colors.grey.shade400,
+            color: colorScheme.onBackground.withOpacity(0.4),
           ),
           const SizedBox(height: 16),
           Text(
             'No problems found',
-            style: TextStyle(
+            style: theme.textTheme.titleMedium?.copyWith(
               fontSize: 18,
               fontWeight: FontWeight.w500,
-              color: Colors.grey.shade600,
+              color: colorScheme.onBackground,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Try adjusting your filters',
-            style: TextStyle(
+            style: theme.textTheme.bodySmall?.copyWith(
               fontSize: 14,
-              color: Colors.grey.shade500,
+              color: colorScheme.onBackground.withOpacity(0.7),
             ),
           ),
           const SizedBox(height: 24),
@@ -196,11 +203,11 @@ class _HomeScreenState extends State<HomeScreen> {
             onPressed: () {
               _applyFilters('All', 'All');
             },
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, color: colorScheme.onPrimary),
             label: const Text('Reset Filters'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue.shade600,
-              foregroundColor: Colors.white,
+              backgroundColor: colorScheme.primary,
+              foregroundColor: colorScheme.onPrimary,
             ),
           ),
         ],
@@ -209,6 +216,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildProblemsView() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Stack(
       children: [
         // Main problems view without top padding or SafeArea
@@ -241,19 +250,19 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.blue.shade600.withOpacity(0.9),
+                color: colorScheme.primary.withOpacity(0.9),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.filter_list, color: Colors.white, size: 16),
+                  Icon(Icons.filter_list, color: colorScheme.onPrimary, size: 16),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Filters: ${_selectedDifficulty != 'All' ? _selectedDifficulty : ''}${_selectedDifficulty != 'All' && _selectedTopic != 'All' ? ' • ' : ''}${_selectedTopic != 'All' ? _selectedTopic : ''}',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: colorScheme.onPrimary,
                         fontWeight: FontWeight.w500,
                         fontSize: 12,
                       ),
@@ -263,7 +272,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () => _applyFilters('All', 'All'),
-                    child: const Icon(Icons.close, color: Colors.white, size: 16),
+                    child: Icon(Icons.close, color: colorScheme.onPrimary, size: 16),
                   ),
                 ],
               ),

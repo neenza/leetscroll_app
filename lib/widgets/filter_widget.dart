@@ -34,17 +34,19 @@ late Set<String> _selectedTopics;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: colorScheme.shadow.withOpacity(0.1),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -60,7 +62,7 @@ late Set<String> _selectedTopics;
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: colorScheme.outline.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -70,13 +72,13 @@ late Set<String> _selectedTopics;
           // Filter title
           Row(
             children: [
-              Icon(Icons.filter_list, color: Colors.blue.shade600),
+              Icon(Icons.filter_list, color: colorScheme.primary),
               const SizedBox(width: 8),
               Text(
                 'Filter Problems',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
+                  color: colorScheme.onSurface,
                 ),
               ),
             ],
@@ -86,9 +88,9 @@ late Set<String> _selectedTopics;
           // Difficulty filter
           Text(
             'Difficulty',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: Colors.grey.shade700,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 8),
@@ -108,16 +110,16 @@ late Set<String> _selectedTopics;
                     child: Chip(
                       label: Text(
                         difficulty,
-                        style: TextStyle(
+                        style: theme.textTheme.labelLarge?.copyWith(
                           color: isSelected 
                               ? _getDifficultyColor(difficulty)
-                              : Colors.grey.shade600,
+                              : colorScheme.onSurface.withOpacity(0.7),
                           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
                       backgroundColor: isSelected
                           ? _getDifficultyColor(difficulty).withOpacity(0.2)
-                          : Colors.transparent,
+                          : colorScheme.surface,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                         side: BorderSide(color: _getDifficultyColor(difficulty)),
@@ -134,9 +136,9 @@ late Set<String> _selectedTopics;
           // Topic filter
           Text(
             'Topics',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: Colors.grey.shade700,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 8),
@@ -157,18 +159,18 @@ late Set<String> _selectedTopics;
                     child: Chip(
                       label: Text(
                         'All Topics',
-                        style: TextStyle(
+                        style: theme.textTheme.labelSmall?.copyWith(
                           fontSize: 12,
-                          color: _selectedTopics.isEmpty ? Colors.purple.shade700 : Colors.grey.shade600,
+                          color: _selectedTopics.isEmpty ? colorScheme.secondary : colorScheme.onSurface.withOpacity(0.7),
                           fontWeight: _selectedTopics.isEmpty ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
                       backgroundColor: _selectedTopics.isEmpty
-                          ? Colors.purple.shade100
-                          : Colors.transparent,
+                          ? colorScheme.secondaryContainer
+                          : colorScheme.surface,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(color: _selectedTopics.isEmpty ? Colors.purple.shade400 : Colors.grey.shade400),
+                        side: BorderSide(color: _selectedTopics.isEmpty ? colorScheme.secondary : colorScheme.outline.withOpacity(0.5)),
                       ),
                       elevation: 0,
                     ),
@@ -191,18 +193,18 @@ late Set<String> _selectedTopics;
                         child: Chip(
                           label: Text(
                             topic,
-                            style: TextStyle(
+                            style: theme.textTheme.labelSmall?.copyWith(
                               fontSize: 12,
-                              color: isSelected ? Colors.purple.shade700 : Colors.grey.shade600,
+                              color: isSelected ? colorScheme.secondary : colorScheme.onSurface.withOpacity(0.7),
                               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                             ),
                           ),
                           backgroundColor: isSelected
-                              ? Colors.purple.shade100
-                              : Colors.transparent,
+                              ? colorScheme.secondaryContainer
+                              : colorScheme.surface,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
-                            side: BorderSide(color: isSelected ? Colors.purple.shade400 : Colors.grey.shade400),
+                            side: BorderSide(color: isSelected ? colorScheme.secondary : colorScheme.outline.withOpacity(0.5)),
                           ),
                           elevation: 0,
                         ),
@@ -226,8 +228,8 @@ late Set<String> _selectedTopics;
               icon: const Icon(Icons.check),
               label: const Text('Apply Filters'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue.shade600,
-                foregroundColor: Colors.white,
+                backgroundColor: colorScheme.primary,
+                foregroundColor: colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),

@@ -155,9 +155,12 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
   }
 
   Widget _buildProblemSide() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Card(
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: colorScheme.surface,
       child: Container(
         width: double.infinity,
         height: double.infinity,
@@ -168,8 +171,8 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.white,
-              Colors.grey.shade50,
+              colorScheme.surface,
+              colorScheme.surfaceVariant,
             ],
           ),
         ),
@@ -181,12 +184,12 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                 Chip(
                   label: Text(
                     '#${widget.problem.frontendId}',
-                    style: const TextStyle(
+                    style: theme.textTheme.labelLarge?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Colors.blue,
+                      color: colorScheme.primary,
                     ),
                   ),
-                  backgroundColor: Colors.blue.shade50,
+                  backgroundColor: colorScheme.primaryContainer,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   elevation: 0,
                 ),
@@ -194,7 +197,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                 Chip(
                   label: Text(
                     widget.problem.difficulty,
-                    style: TextStyle(
+                    style: theme.textTheme.labelLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: LeetCodeProblem.getDifficultyColor(widget.problem.difficulty),
                     ),
@@ -206,7 +209,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                 Spacer(),
                 IconButton(
                   onPressed: _flip,
-                  icon: Icon(Icons.flip_to_back),
+                  icon: Icon(Icons.flip_to_back, color: colorScheme.onSurface),
                   tooltip: 'Flip to see solution',
                 ),
               ],
@@ -214,9 +217,9 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
             const SizedBox(height: 4),
             Text(
               widget.problem.title,
-              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade800,
+              style: theme.textTheme.headlineLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 24),
@@ -233,9 +236,9 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                     children: [
                       Text(
                         'Problem Description:',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Colors.grey.shade700,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -249,9 +252,9 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                           !line.trim().startsWith('Constraints:'))
                         .map((line) => Text(
                               line,
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              style: theme.textTheme.bodyMedium?.copyWith(
                                 height: 1.5,
-                                color: Colors.grey.shade600,
+                                color: colorScheme.onSurface.withOpacity(0.8),
                               ),
                             )),
                     const SizedBox(height: 16),
@@ -260,9 +263,9 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                     if (widget.problem.examples.isNotEmpty) ...[
                       Text(
                         'Examples:',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Colors.grey.shade700,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -280,9 +283,9 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
+                            color: colorScheme.surfaceVariant,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey.shade300),
+                            border: Border.all(color: colorScheme.outline.withOpacity(0.3)),
                           ),
                           child: Text(
                             filteredExample,
@@ -300,9 +303,9 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                       const SizedBox(height: 16),
                       Text(
                         'Constraints:',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Colors.grey.shade700,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -311,8 +314,8 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                           padding: const EdgeInsets.only(bottom: 4),
                           child: Text(
                             '• $constraint',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.grey.shade600,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurface.withOpacity(0.8),
                             ),
                           ),
                         );
@@ -323,9 +326,9 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                     if (widget.problem.topics.isNotEmpty) ...[
                       Text(
                         'Topics:',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Colors.grey.shade700,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                       Wrap(
@@ -335,13 +338,13 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                           return Chip(
                             label: Text(
                               topic,
-                              style: const TextStyle(
+                              style: theme.textTheme.labelSmall?.copyWith(
                                 fontSize: 12,
-                                color: Colors.purple,
+                                color: colorScheme.secondary,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            backgroundColor: Colors.purple.shade50,
+                            backgroundColor: colorScheme.secondaryContainer,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             elevation: 0,
                           );
@@ -361,9 +364,12 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
   }
 
   Widget _buildSolutionSide() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     return Card(
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: colorScheme.surface,
       child: Container(
         width: double.infinity,
         height: double.infinity,
@@ -374,8 +380,8 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.green.shade50,
-              Colors.white,
+              colorScheme.surfaceVariant,
+              colorScheme.surface,
             ],
           ),
         ),
@@ -385,19 +391,19 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
             // Header
             Row(
               children: [
-                Icon(Icons.lightbulb, color: Colors.green.shade600),
+                Icon(Icons.lightbulb, color: colorScheme.secondary),
                 const SizedBox(width: 8),
                 Text(
                   'Solution',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Colors.green.shade700,
+                    color: colorScheme.secondary,
                   ),
                 ),
                 const Spacer(),
                 IconButton(
                   onPressed: _flip,
-                  icon: const Icon(Icons.flip_to_front),
+                  icon: Icon(Icons.flip_to_front, color: colorScheme.onSurface),
                   tooltip: 'Flip to see problem',
                 ),
               ],
@@ -413,9 +419,9 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                     if (widget.problem.solution != null) ...[
                       Text(
                         widget.problem.solution!,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        style: theme.textTheme.bodyMedium?.copyWith(
                           height: 1.5,
-                          color: Colors.grey.shade700,
+                          color: colorScheme.onSurface.withOpacity(0.8),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -425,9 +431,9 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                     if (widget.problem.hints.isNotEmpty) ...[
                       Text(
                         'Hints:',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Colors.orange.shade700,
+                          color: colorScheme.tertiary,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -436,9 +442,9 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                           margin: const EdgeInsets.only(bottom: 12),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.orange.shade50,
+                            color: colorScheme.tertiaryContainer,
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.orange.shade200),
+                            border: Border.all(color: colorScheme.tertiary.withOpacity(0.3)),
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -446,14 +452,15 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
-                                  color: Colors.orange.shade200,
+                                  color: colorScheme.tertiary,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
                                   '${entry.key + 1}',
-                                  style: const TextStyle(
+                                  style: theme.textTheme.labelSmall?.copyWith(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 12,
+                                    color: colorScheme.onTertiary,
                                   ),
                                 ),
                               ),
@@ -461,8 +468,8 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                               Expanded(
                                 child: Text(
                                   entry.value,
-                                  style: TextStyle(
-                                    color: Colors.grey.shade700,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: colorScheme.onSurface.withOpacity(0.8),
                                     height: 1.4,
                                   ),
                                 ),
@@ -478,9 +485,9 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                     if (widget.problem.codeSnippets.isNotEmpty) ...[
                       Text(
                         'Code Templates:',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Colors.blue.shade700,
+                          color: colorScheme.primary,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -493,7 +500,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                 decoration: BoxDecoration(
-                                  color: Colors.blue.shade100,
+                                  color: colorScheme.primaryContainer,
                                   borderRadius: const BorderRadius.only(
                                     topLeft: Radius.circular(8),
                                     topRight: Radius.circular(8),
@@ -501,9 +508,9 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                                 ),
                                 child: Text(
                                   entry.key.toUpperCase(),
-                                  style: TextStyle(
+                                  style: theme.textTheme.labelSmall?.copyWith(
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.blue.shade700,
+                                    color: colorScheme.primary,
                                     fontSize: 12,
                                   ),
                                 ),
@@ -512,7 +519,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                                 width: double.infinity,
                                 padding: const EdgeInsets.all(12),
                                 decoration: BoxDecoration(
-                                  color: Colors.grey.shade900,
+                                  color: colorScheme.surfaceVariant,
                                   borderRadius: const BorderRadius.only(
                                     bottomLeft: Radius.circular(8),
                                     bottomRight: Radius.circular(8),
@@ -520,9 +527,9 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                                 ),
                                 child: Text(
                                   entry.value,
-                                  style: const TextStyle(
+                                  style: theme.textTheme.bodySmall?.copyWith(
                                     fontFamily: 'monospace',
-                                    color: Colors.white,
+                                    color: colorScheme.onSurface,
                                     fontSize: 12,
                                   ),
                                 ),
@@ -542,19 +549,19 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
               padding: const EdgeInsets.all(12),
               margin: const EdgeInsets.only(top: 16),
               decoration: BoxDecoration(
-                color: Colors.green.shade50,
+                color: colorScheme.secondaryContainer,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.green.shade200),
+                border: Border.all(color: colorScheme.secondary.withOpacity(0.3)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.touch_app, color: Colors.green.shade600, size: 20),
+                  Icon(Icons.touch_app, color: colorScheme.secondary, size: 20),
                   const SizedBox(width: 8),
                   Text(
                     'Tap to see problem',
-                    style: TextStyle(
-                      color: Colors.green.shade600,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.secondary,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
