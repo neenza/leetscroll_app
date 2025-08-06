@@ -167,14 +167,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              colorScheme.surface,
-              colorScheme.surfaceVariant,
-            ],
-          ),
+          color: colorScheme.surface,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,14 +369,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              colorScheme.surfaceVariant,
-              colorScheme.surface,
-            ],
-          ),
+          color: colorScheme.surface,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
