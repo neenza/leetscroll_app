@@ -123,7 +123,6 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: _flip,
       onHorizontalDragEnd: (details) {
         // Only flip if swipe is significant
         if (details.primaryVelocity != null && details.primaryVelocity!.abs() > 200) {
