@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'dart:convert';
 import '../models/leetcode_problem.dart';
 
@@ -136,7 +137,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard> with Single
         'title': problem.title,
         'difficulty': problem.difficulty,
         'description': problem.description,
-        'examples': problem.examples?.map((e) => {
+        'examples': problem.examples.map((e) => {
           'exampleText': e.exampleText,
           'images': e.images,
         }).toList(),
@@ -735,14 +736,25 @@ class _FlippableProblemCardState extends State<FlippableProblemCard> with Single
                                   : colorScheme.secondaryContainer,
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Text(
-                              msg.text,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: msg.isUser
-                                    ? colorScheme.primary
-                                    : colorScheme.onSecondaryContainer,
-                              ),
-                            ),
+                            child: msg.isUser
+                                ? Text(
+                                    msg.text,
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: colorScheme.primary,
+                                    ),
+                                  )
+                                : MarkdownBody(
+                                    data: msg.text,
+                                    styleSheet: MarkdownStyleSheet(
+                                      p: theme.textTheme.bodyMedium?.copyWith(
+                                        color: colorScheme.onSecondaryContainer,
+                                      ),
+                                      code: theme.textTheme.bodySmall?.copyWith(
+                                        fontFamily: 'monospace',
+                                        color: colorScheme.primary,
+                                      ),
+                                    ),
+                                  ),
                           ),
                         );
                       },
