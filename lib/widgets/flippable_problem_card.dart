@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_highlight/flutter_highlight.dart';
 import 'package:flutter_highlight/themes/atom-one-dark.dart';
+import 'package:flutter_highlight/themes/atom-one-light.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'dart:convert';
 import '../models/leetcode_problem.dart';
@@ -20,15 +21,21 @@ class CodeElementBuilder extends MarkdownElementBuilder {
         language = classAttr.substring(9);
       }
     }
-    return HighlightView(
-      element.textContent,
-      language: language,
-      theme: atomOneDarkTheme,
-      padding: const EdgeInsets.all(8),
-      textStyle: const TextStyle(
-        fontFamily: 'monospace',
-        fontSize: 10,
-      ),
+    // Use context to get theme brightness
+    return Builder(
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return HighlightView(
+          element.textContent,
+          language: language,
+          theme: isDark ? atomOneDarkTheme : atomOneLightTheme,
+          padding: const EdgeInsets.all(2),
+          textStyle: const TextStyle(
+            fontFamily: 'monospace',
+            fontSize: 10,
+          ),
+        );
+      },
     );
   }
 }
