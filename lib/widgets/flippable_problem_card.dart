@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../models/leetcode_problem.dart';
 
 // Simple chat message model
@@ -36,7 +39,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard> with Single
   bool _isShowingSolution = false;
   bool _hasReachedBottom = false;
 
-  void _sendChatMessage() {
+  void _sendChatMessage() async {
     final text = _chatController.text.trim();
     if (text.isEmpty) return;
     setState(() {
@@ -47,16 +50,104 @@ class _FlippableProblemCardState extends State<FlippableProblemCard> with Single
       ));
     });
     _chatController.clear();
-    // Add a demo AI response after a short delay
-    Future.delayed(const Duration(milliseconds: 700), () {
+
+    // Add a loading message
+    setState(() {
+      _chatMessages.add(_ChatMessage(
+        text: '[AI is typing...]',
+        isUser: false,
+        timestamp: DateTime.now(),
+      ));
+    });
+
+    try {
+      // Load API key from .env
+      final apiKey = dotenv.env['GEMINI_API_KEY'];
+      if (apiKey == null || apiKey.isEmpty) {
+        throw Exception('Gemini API key not found. Please set GEMINI_API_KEY in your .env file.');
+      }
+
+      // Prepare the context: problem JSON
+      final problemJson = _problemToJson(widget.problem);
+      final prompt = text;
+
+      // Gemini 2.5 Flash endpoint (official)
+      final url = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey');
+
+      final requestBody = {
+        "contents": [
+          {
+            "role": "user",
+            "parts": [
+              {"text": "You are an expert coding assistant. Here is a LeetCode problem in JSON format: $problemJson.\nThe user will now ask a question about this problem. Please answer as helpfully as possible."},
+              {"text": prompt}
+            ]
+          }
+        ]
+      };
+
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(requestBody),
+      );
+
+      String aiText = 'Sorry, no response from Gemini.';
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data["candidates"] != null && data["candidates"].isNotEmpty) {
+          final parts = data["candidates"][0]["content"]["parts"];
+          if (parts != null && parts.isNotEmpty && parts[0]["text"] != null) {
+            aiText = parts[0]["text"];
+          }
+        } else if (data["promptFeedback"] != null && data["promptFeedback"]["blockReason"] != null) {
+          aiText = 'Gemini blocked this prompt: ' + data["promptFeedback"]["blockReason"];
+        }
+      } else {
+        aiText = 'Gemini API error: ${response.statusCode} ${response.reasonPhrase}';
+      }
+
       setState(() {
+        // Remove the loading message
+        _chatMessages.removeWhere((msg) => msg.text == '[AI is typing...]' && !msg.isUser);
         _chatMessages.add(_ChatMessage(
-          text: 'This is a demo AI response. The real AI will answer here!',
+          text: aiText,
           isUser: false,
           timestamp: DateTime.now(),
         ));
       });
-    });
+    } catch (e) {
+      setState(() {
+        _chatMessages.removeWhere((msg) => msg.text == '[AI is typing...]' && !msg.isUser);
+        _chatMessages.add(_ChatMessage(
+          text: 'Error: ${e.toString()}',
+          isUser: false,
+          timestamp: DateTime.now(),
+        ));
+      });
+    }
+  }
+
+  // Helper to convert LeetCodeProblem to JSON string
+  String _problemToJson(LeetCodeProblem problem) {
+    try {
+      return jsonEncode({
+        'frontendId': problem.frontendId,
+        'title': problem.title,
+        'difficulty': problem.difficulty,
+        'description': problem.description,
+        'examples': problem.examples?.map((e) => {
+          'exampleText': e.exampleText,
+          'images': e.images,
+        }).toList(),
+        'constraints': problem.constraints,
+        'topics': problem.topics,
+        'hints': problem.hints,
+        'isSolved': problem.isSolved,
+      });
+    } catch (e) {
+      return '{}';
+    }
   }
 
   @override
