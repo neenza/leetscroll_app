@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import '../models/leetcode_problem.dart';
 import '../services/problems_service.dart';
 import '../widgets/flippable_problem_card.dart';
@@ -93,16 +94,25 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       backgroundColor: Colors.grey.shade100,
-      appBar: AppBar(
-        title: const Text('LeetScroll', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        elevation: 2,
-        centerTitle: false,
-        titleTextStyle: Theme.of(context).textTheme.headlineSmall?.copyWith(
-          fontWeight: FontWeight.bold,
-          color: Colors.grey.shade800,
-          letterSpacing: 1.2,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(56.0),
+        child: ClipRRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+            child: AppBar(
+              title: const Text('LeetScroll', style: TextStyle(fontWeight: FontWeight.bold)),
+              backgroundColor: Colors.white.withOpacity(0.2),
+              elevation: 0,
+              centerTitle: false,
+              titleTextStyle: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade800,
+                letterSpacing: 1.2,
+              ),
+            ),
+          ),
         ),
       ),
       body: _isLoading
@@ -184,26 +194,27 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildProblemsView() {
     return Stack(
       children: [
-        // Main problems view
-        PageView.builder(
-          controller: _pageController,
-          scrollDirection: Axis.vertical,
-          onPageChanged: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-          itemCount: _filteredProblems.length,
-          itemBuilder: (context, index) {
-            final problem = _filteredProblems[index];
-            return FlippableProblemCard(
-              problem: problem,
-              onScrollToNext: _navigateToNextProblem,
-            );
-          },
+        // Main problems view with top padding for AppBar
+        Padding(
+          padding: const EdgeInsets.only(top: 84.0), // AppBar height
+          child: PageView.builder(
+            controller: _pageController,
+            scrollDirection: Axis.vertical,
+            onPageChanged: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            itemCount: _filteredProblems.length,
+            itemBuilder: (context, index) {
+              final problem = _filteredProblems[index];
+              return FlippableProblemCard(
+                problem: problem,
+                onScrollToNext: _navigateToNextProblem,
+              );
+            },
+          ),
         ),
-
-        // ...existing code...
 
         // Current filters indicator
         if (_selectedDifficulty != 'All' || _selectedTopic != 'All')
@@ -242,9 +253,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-
-        // Side progress indicator
-        // Removed
 
         // Navigation hints
         Positioned(
