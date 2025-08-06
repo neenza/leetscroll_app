@@ -25,11 +25,10 @@ late Set<String> _selectedTopics;
   void initState() {
     super.initState();
     _selectedDifficulty = widget.selectedDifficulty;
-    // Support legacy single topic selection for backward compatibility
-    if (widget.selectedTopic == 'All') {
+    if (widget.selectedTopic == 'All' || widget.selectedTopic.isEmpty) {
       _selectedTopics = <String>{};
     } else {
-      _selectedTopics = {widget.selectedTopic};
+      _selectedTopics = widget.selectedTopic.split(',').map((t) => t.trim()).where((t) => t.isNotEmpty).toSet();
     }
   }
 
@@ -103,8 +102,6 @@ late Set<String> _selectedTopics;
                     setState(() {
                       _selectedDifficulty = difficulty;
                     });
-                    final topicsStr = _selectedTopics.isEmpty ? 'All' : _selectedTopics.join(',');
-                    widget.onFiltersChanged(_selectedDifficulty, topicsStr);
                   },
                   child: Container(
                     margin: const EdgeInsets.only(right: 8),
@@ -149,41 +146,69 @@ late Set<String> _selectedTopics;
               child: Wrap(
                 spacing: 8,
                 runSpacing: 4,
-                children: ProblemsService.getAllTopics().map((topic) {
-                  final isSelected = _selectedTopics.contains(topic);
-                  return GestureDetector(
+                children: [
+                  // All Topics chip
+                  GestureDetector(
                     onTap: () {
                       setState(() {
-                        if (isSelected) {
-                          _selectedTopics.remove(topic);
-                        } else {
-                          _selectedTopics.add(topic);
-                        }
+                        _selectedTopics.clear();
                       });
-                      // Pass as comma-separated string for compatibility, or empty string for 'All'
-                      final topicsStr = _selectedTopics.isEmpty ? 'All' : _selectedTopics.join(',');
-                      widget.onFiltersChanged(_selectedDifficulty, topicsStr);
                     },
                     child: Chip(
                       label: Text(
-                        topic,
+                        'All Topics',
                         style: TextStyle(
                           fontSize: 12,
-                          color: isSelected ? Colors.purple.shade700 : Colors.grey.shade600,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          color: _selectedTopics.isEmpty ? Colors.purple.shade700 : Colors.grey.shade600,
+                          fontWeight: _selectedTopics.isEmpty ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
-                      backgroundColor: isSelected
+                      backgroundColor: _selectedTopics.isEmpty
                           ? Colors.purple.shade100
                           : Colors.transparent,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
-                        side: BorderSide(color: isSelected ? Colors.purple.shade400 : Colors.grey.shade400),
+                        side: BorderSide(color: _selectedTopics.isEmpty ? Colors.purple.shade400 : Colors.grey.shade400),
                       ),
                       elevation: 0,
                     ),
-                  );
-                }).toList(),
+                  ),
+                  // Individual topic chips (excluding any 'All' or 'All Topics')
+                  ...ProblemsService.getAllTopics()
+                    .where((topic) => topic.toLowerCase() != 'all' && topic.toLowerCase() != 'all topics')
+                    .map((topic) {
+                      final isSelected = _selectedTopics.contains(topic);
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            if (isSelected) {
+                              _selectedTopics.remove(topic);
+                            } else {
+                              _selectedTopics.add(topic);
+                            }
+                          });
+                        },
+                        child: Chip(
+                          label: Text(
+                            topic,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: isSelected ? Colors.purple.shade700 : Colors.grey.shade600,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            ),
+                          ),
+                          backgroundColor: isSelected
+                              ? Colors.purple.shade100
+                              : Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side: BorderSide(color: isSelected ? Colors.purple.shade400 : Colors.grey.shade400),
+                          ),
+                          elevation: 0,
+                        ),
+                      );
+                    }).toList(),
+                ],
               ),
             ),
           ),
@@ -194,6 +219,8 @@ late Set<String> _selectedTopics;
             width: double.infinity,
             child: ElevatedButton.icon(
               onPressed: () {
+                final topicsStr = _selectedTopics.isEmpty ? 'All' : _selectedTopics.join(',');
+                widget.onFiltersChanged(_selectedDifficulty, topicsStr);
                 Navigator.pop(context);
               },
               icon: const Icon(Icons.check),
