@@ -27,7 +27,7 @@ class CodeElementBuilder extends MarkdownElementBuilder {
       padding: const EdgeInsets.all(8),
       textStyle: const TextStyle(
         fontFamily: 'monospace',
-        fontSize: 14,
+        fontSize: 10,
       ),
     );
   }
@@ -99,21 +99,37 @@ class _FlippableProblemCardState extends State<FlippableProblemCard> with Single
 
       // Prepare the context: problem JSON
       final problemJson = _problemToJson(widget.problem);
-      final prompt = text;
+
+      // Build the full chat history for Gemini
+      List<Map<String, dynamic>> contents = [];
+      // Add system prompt as the very first message (if you want to always include problem context)
+      contents.add({
+        "role": "user",
+        "parts": [
+          {"text": "You are an expert coding assistant. Here is a LeetCode problem in JSON format: $problemJson. The user will now ask a question about this problem. Please answer as helpfully as possible."}
+        ]
+      });
+      // Add all previous chat messages (except the loading message)
+      // Only keep the last 20 exchanges for context window safety
+      final history = _chatMessages.where((msg) => msg.text != '[AI is typing...]').toList();
+      final maxHistory = 20;
+      final startIdx = history.length > maxHistory ? history.length - maxHistory : 0;
+      for (var msg in history.sublist(startIdx)) {
+        contents.add({
+          "role": msg.isUser ? "user" : "model",
+          "parts": [
+            {"text": msg.text}
+          ]
+        });
+      }
+      // Add the new user message as the last entry
+      // (already added above, so no need to add again)
 
       // Gemini 2.5 Flash endpoint (official)
       final url = Uri.parse('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey');
 
       final requestBody = {
-        "contents": [
-          {
-            "role": "user",
-            "parts": [
-              {"text": "You are an expert coding assistant. Here is a LeetCode problem in JSON format: $problemJson.\nThe user will now ask a question about this problem. Please answer as helpfully as possible."},
-              {"text": prompt}
-            ]
-          }
-        ]
+        "contents": contents
       };
 
       final response = await http.post(
