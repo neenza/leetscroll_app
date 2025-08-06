@@ -11,9 +11,15 @@ import '../models/leetcode_problem.dart';
 
 // Custom builder for syntax-highlighted code blocks (C++)
 class CodeElementBuilder extends MarkdownElementBuilder {
+  // Helper to clone a theme and set background to transparent
+  Map<String, TextStyle> _transparentBgTheme(Map<String, TextStyle> baseTheme) {
+    final newTheme = Map<String, TextStyle>.from(baseTheme);
+    newTheme['root'] = (baseTheme['root'] ?? const TextStyle()).copyWith(backgroundColor: Colors.transparent);
+    return newTheme;
+  }
+
   @override
   Widget? visitElementAfter(md.Element element, TextStyle? preferredStyle) {
-    // Try to get language from code block, default to cpp
     String language = 'cpp';
     if (element.attributes['class'] != null) {
       final classAttr = element.attributes['class'] as String;
@@ -21,18 +27,31 @@ class CodeElementBuilder extends MarkdownElementBuilder {
         language = classAttr.substring(9);
       }
     }
-    // Use context to get theme brightness
     return Builder(
       builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        return HighlightView(
-          element.textContent,
-          language: language,
-          theme: isDark ? atomOneDarkTheme : atomOneLightTheme,
-          padding: const EdgeInsets.all(2),
-          textStyle: const TextStyle(
-            fontFamily: 'monospace',
-            fontSize: 10,
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+        final isDark = theme.brightness == Brightness.dark;
+        // Blend secondaryContainer with surface for a lighter, more elegant code block background
+        final codeBgColor = Color.alphaBlend(
+          colorScheme.surface.withOpacity(0.5),
+          colorScheme.secondaryContainer,
+        );
+        final highlightTheme = isDark ? atomOneDarkTheme : atomOneLightTheme;
+        final transparentTheme = _transparentBgTheme(highlightTheme);
+        return Container(
+          decoration: BoxDecoration(
+            color: codeBgColor,
+          ),
+          child: HighlightView(
+            element.textContent,
+            language: language,
+            theme: transparentTheme,
+            padding: const EdgeInsets.all(8),
+            textStyle: const TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 10,
+            ),
           ),
         );
       },
