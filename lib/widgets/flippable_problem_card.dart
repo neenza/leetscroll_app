@@ -397,7 +397,9 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                         ),
                       ),
                       const SizedBox(height: 8),
-                    ...widget.problem.examples.map((example) {
+                    ...widget.problem.examples.asMap().entries.map((entry) {
+                      final idx = entry.key;
+                      final example = entry.value;
                       final filteredExample = example.exampleText
                           .split('\n')
                           .where((line) =>
@@ -406,6 +408,14 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                             !line.trim().startsWith('Example 3:') &&
                             !line.trim().startsWith('Constraints:'))
                           .join('\n');
+                      // Get images from example 1
+                      final example1Images = widget.problem.examples.isNotEmpty
+                          ? widget.problem.examples[0].images
+                          : <String>[];
+                      // Only show images not present in example 1 (unless this is example 1)
+                      final imagesToShow = idx == 0
+                          ? example.images
+                          : example.images.where((img) => !example1Images.contains(img)).toList();
                       return Container(
                         margin: const EdgeInsets.only(bottom: 12),
                         padding: const EdgeInsets.all(12),
@@ -424,10 +434,9 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                                 fontSize: 13,
                               ),
                             ),
-                            if (example.images.isNotEmpty) ...[
-                              const SizedBox(height: 8),
-                              ...example.images.map((imgUrl) => Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
+                            if (imagesToShow.isNotEmpty)
+                              ...imagesToShow.map((imgUrl) => Padding(
+                                padding: const EdgeInsets.only(top: 8, bottom: 8),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
                                   child: Image.network(
@@ -441,7 +450,6 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                                   ),
                                 ),
                               ))
-                            ],
                           ],
                         ),
                       );
