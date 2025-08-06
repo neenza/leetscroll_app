@@ -288,11 +288,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                   icon: Icon(Icons.lightbulb, color: colorScheme.secondary),
                   tooltip: 'Show hints',
                 ),
-                IconButton(
-                  onPressed: _flip,
-                  icon: Icon(Icons.flip_to_back, color: colorScheme.onSurface),
-                  tooltip: 'Flip to see solution',
-                ),
+                // Flip button removed; flip by swipe/tap
               ],
             ),
             const SizedBox(height: 4),
@@ -475,11 +471,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                   ),
                 ),
                 const Spacer(),
-                IconButton(
-                  onPressed: _flip,
-                  icon: Icon(Icons.flip_to_front, color: colorScheme.onSurface),
-                  tooltip: 'Flip to see problem',
-                ),
+                // Flip button removed; flip by swipe/tap
               ],
             ),
             const SizedBox(height: 16),
