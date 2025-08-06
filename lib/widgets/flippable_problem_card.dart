@@ -201,6 +201,94 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                 ),
                 Spacer(),
                 IconButton(
+                  onPressed: () {
+                    if (widget.problem.hints.isNotEmpty) {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Row(
+                            children: [
+                              Icon(Icons.lightbulb, color: colorScheme.secondary),
+                              const SizedBox(width: 8),
+                              Text('Hints', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          content: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: widget.problem.hints
+                                  .asMap()
+                                  .entries
+                                  .map((entry) => Padding(
+                                        padding: const EdgeInsets.only(bottom: 12),
+                                        child: Row(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                              decoration: BoxDecoration(
+                                                color: colorScheme.tertiary,
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              child: Text(
+                                                '${entry.key + 1}',
+                                                style: theme.textTheme.labelSmall?.copyWith(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 12,
+                                                  color: colorScheme.onTertiary,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Text(
+                                                entry.value,
+                                                style: theme.textTheme.bodyMedium?.copyWith(
+                                                  color: colorScheme.onSurface.withOpacity(0.8),
+                                                  height: 1.4,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ))
+                                  .toList(),
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text('Close'),
+                            ),
+                          ],
+                        ),
+                      );
+                    } else {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Row(
+                            children: [
+                              Icon(Icons.lightbulb, color: colorScheme.secondary),
+                              const SizedBox(width: 8),
+                              Text('Hints', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          content: Text('Hints are not available for this question.', style: theme.textTheme.bodyMedium),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text('Close'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  },
+                  icon: Icon(Icons.lightbulb, color: colorScheme.secondary),
+                  tooltip: 'Show hints',
+                ),
+                IconButton(
                   onPressed: _flip,
                   icon: Icon(Icons.flip_to_back, color: colorScheme.onSurface),
                   tooltip: 'Flip to see solution',
@@ -410,60 +498,6 @@ class _FlippableProblemCardState extends State<FlippableProblemCard>
                           color: colorScheme.onSurface.withOpacity(0.8),
                         ),
                       ),
-                      const SizedBox(height: 20),
-                    ],
-
-                    // Hints
-                    if (widget.problem.hints.isNotEmpty) ...[
-                      Text(
-                        'Hints:',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.tertiary,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      ...widget.problem.hints.asMap().entries.map((entry) {
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: colorScheme.tertiaryContainer,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: colorScheme.tertiary.withOpacity(0.3)),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: colorScheme.tertiary,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  '${entry.key + 1}',
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                    color: colorScheme.onTertiary,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  entry.value,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: colorScheme.onSurface.withOpacity(0.8),
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
                       const SizedBox(height: 20),
                     ],
 
