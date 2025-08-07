@@ -7,6 +7,7 @@ import 'package:flutter_highlight/themes/atom-one-dark.dart';
 import 'package:flutter_highlight/themes/atom-one-light.dart';
 import 'package:markdown/markdown.dart' as md;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/leetcode_problem.dart';
 
 // Custom builder for syntax-highlighted code blocks (C++)
@@ -151,10 +152,17 @@ class _FlippableProblemCardState extends State<FlippableProblemCard> with Single
             Row(
               children: [
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    final key = _apiKeyController.text.trim();
                     setState(() {
-                      _userApiKey = _apiKeyController.text.trim().isEmpty ? null : _apiKeyController.text.trim();
+                      _userApiKey = key.isEmpty ? null : key;
                     });
+                    final prefs = await SharedPreferences.getInstance();
+                    if (key.isNotEmpty) {
+                      await prefs.setString('gemini_api_key', key);
+                    } else {
+                      await prefs.remove('gemini_api_key');
+                    }
                     Navigator.of(context).pop();
                   },
                   child: Text('Save'),
@@ -368,10 +376,22 @@ class _FlippableProblemCardState extends State<FlippableProblemCard> with Single
       curve: Curves.easeInOut,
     ));
     _scrollController = ScrollController();
+    // Load API key from SharedPreferences
+    _loadApiKey();
     // Notify parent of initial side (front)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.onCardSideChanged?.call(true);
     });
+  }
+
+  Future<void> _loadApiKey() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = prefs.getString('gemini_api_key');
+    if (key != null && key.isNotEmpty) {
+      setState(() {
+        _userApiKey = key;
+      });
+    }
   }
 
   @override
