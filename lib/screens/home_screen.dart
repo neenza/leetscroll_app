@@ -20,6 +20,59 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool _isSearching = false;
+  Widget _buildSearchResultsView() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    if (_searchResults.isEmpty) {
+      return Center(
+        child: Text(
+          'No matching problems found.',
+          style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onBackground.withOpacity(0.7)),
+        ),
+      );
+    }
+    return ListView.separated(
+      padding: const EdgeInsets.only(top: 80, left: 16, right: 16, bottom: 16),
+      itemCount: _searchResults.length,
+      separatorBuilder: (context, index) => const Divider(height: 1),
+      itemBuilder: (context, idx) {
+        final problem = _searchResults[idx];
+        return ListTile(
+          title: Text(
+            '#${problem.frontendId}  ${problem.title}',
+            style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          subtitle: Text(problem.difficulty, style: theme.textTheme.bodySmall),
+          trailing: Icon(Icons.arrow_forward_ios, size: 18, color: colorScheme.primary),
+        onTap: () {
+          final indexInFiltered = _filteredProblems.indexWhere((p) => p.frontendId == problem.frontendId);
+          if (indexInFiltered != -1) {
+            setState(() {
+              _isSearching = false;
+              _currentIndex = indexInFiltered;
+              _searchController.clear();
+              _searchQuery = '';
+              _searchResults.clear();
+            });
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (_pageController.hasClients) {
+                _pageController.animateToPage(
+                  indexInFiltered,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              }
+            });
+          }
+        },
+        );
+      },
+    );
+  }
+  TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  List<LeetCodeProblem> _searchResults = [];
   bool _isCardFront = true;
   PageController _pageController = PageController();
   List<LeetCodeProblem> _problems = [];
@@ -28,6 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _selectedDifficulty = 'All';
   String _selectedTopic = 'All';
   int _currentIndex = 0;
+
 
   @override
   void initState() {
@@ -99,6 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -122,8 +177,63 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               title: Row(
                 children: [
-                  const Text('LeetScroll', style: TextStyle(fontWeight: FontWeight.bold)),
-                  const Spacer(),
+                  if (!_isSearching) ...[
+                    const Text('LeetScroll', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.search),
+                      tooltip: 'Search',
+                      onPressed: () {
+                        setState(() {
+                          _isSearching = true;
+                        });
+                      },
+                    ),
+                  ] else ...[
+                    Expanded(
+                      child: SizedBox(
+                        height: 40,
+                        child: TextField(
+                          autofocus: true,
+                          controller: _searchController,
+                          decoration: InputDecoration(
+                            hintText: 'Search by ID or name',
+                            hintStyle: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface.withOpacity(0.5)),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                            isDense: true,
+                            filled: true,
+                            fillColor: colorScheme.surface.withOpacity(0.7),
+                            // suffixIcon removed
+                          ),
+                          style: theme.textTheme.bodyMedium,
+                          onChanged: (value) {
+                            setState(() {
+                              _searchQuery = value;
+                              _searchResults = value.trim().isEmpty
+                                  ? []
+                                  : _filteredProblems.where((p) =>
+                                      p.frontendId.toLowerCase().contains(value.trim().toLowerCase()) ||
+                                      p.title.toLowerCase().contains(value.trim().toLowerCase())
+                                    ).toList();
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      tooltip: 'Cancel',
+                      onPressed: () {
+                        setState(() {
+                          _isSearching = false;
+                          _searchController.clear();
+                          _searchQuery = '';
+                          _searchResults.clear();
+                        });
+                      },
+                    ),
+                  ],
                   IconButton(
                     icon: Icon(widget.isDarkMode ? Icons.wb_sunny : Icons.nightlight_round, color: colorScheme.onSurface),
                     tooltip: widget.isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode',
@@ -137,9 +247,11 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: _isLoading
           ? _buildLoadingState()
-          : _filteredProblems.isEmpty
-              ? _buildEmptyState()
-              : _buildProblemsView(),
+          : (_searchQuery.isNotEmpty
+              ? _buildSearchResultsView()
+              : (_filteredProblems.isEmpty
+                  ? _buildEmptyState()
+                  : _buildProblemsView())),
       floatingActionButton: _isCardFront
           ? FloatingActionButton(
               onPressed: _showFilterBottomSheet,
