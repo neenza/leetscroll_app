@@ -588,7 +588,7 @@ class _FlippableProblemCardState extends State<FlippableProblemCard> with Single
                     ),
                   ),
                   selected: widget.problem.isSolved,
-                  onSelected: (bool value) {
+                  onSelected: (bool value) async {
                     widget.onSolvedChanged?.call(value);
                   },
                   showCheckmark: widget.problem.isSolved,

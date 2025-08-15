@@ -4,6 +4,7 @@ import '../models/leetcode_problem.dart';
 import '../services/problems_service.dart';
 import '../widgets/flippable_problem_card.dart';
 import '../widgets/filter_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool isDarkMode;
@@ -21,6 +22,27 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool _isSearching = false;
+  bool _isShowingHistory = false;
+  List<LeetCodeProblem> _solvedHistory = [];
+  Map<String, String> _solvedTimestamps = {};
+  Future<void> _loadSolvedHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final solvedList = prefs.getStringList('solved_history') ?? [];
+    // Map frontendId to timestamp
+    _solvedTimestamps.clear();
+    for (final entry in solvedList) {
+      final parts = entry.split('|');
+      if (parts.length == 2) {
+        _solvedTimestamps[parts[0]] = parts[1];
+      }
+    }
+    // Get problems by solved time (descending)
+    final solvedProblems = _problems.where((p) => _solvedTimestamps.containsKey(p.frontendId)).toList();
+    solvedProblems.sort((a, b) => _solvedTimestamps[b.frontendId]!.compareTo(_solvedTimestamps[a.frontendId]!));
+    setState(() {
+      _solvedHistory = solvedProblems;
+    });
+  }
   Widget _buildSearchResultsView() {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -90,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _loadProblems();
+    _loadProblems().then((_) => _loadSolvedHistory());
   }
 
   @override
@@ -105,9 +127,24 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     await ProblemsService.loadProblems();
-    
+    // Load problems
+    final loadedProblems = ProblemsService.getAllProblems();
+    // Load solved history from SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    final solvedList = prefs.getStringList('solved_history') ?? [];
+    final solvedIds = <String>{};
+    for (final entry in solvedList) {
+      final parts = entry.split('|');
+      if (parts.length == 2) {
+        solvedIds.add(parts[0]);
+      }
+    }
+    // Set isSolved for each problem
+    for (final problem in loadedProblems) {
+      problem.isSolved = solvedIds.contains(problem.frontendId);
+    }
     setState(() {
-      _problems = ProblemsService.getAllProblems();
+      _problems = loadedProblems;
       _filteredProblems = _problems;
       _isLoading = false;
     });
@@ -181,7 +218,20 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               title: Row(
                 children: [
-                  if (!_isSearching) ...[
+                  if (_isShowingHistory) ...[
+                    const Text('Solved History', style: TextStyle(fontWeight: FontWeight.bold)),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      tooltip: 'Back',
+                      onPressed: () {
+                        setState(() {
+                          _isShowingHistory = false;
+                        });
+                      },
+                    ),
+                  ]
+                  else if (!_isSearching) ...[
                     const Text('LeetScroll', style: TextStyle(fontWeight: FontWeight.bold)),
                     const Spacer(),
                     IconButton(
@@ -190,6 +240,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPressed: () {
                         setState(() {
                           _isSearching = true;
+                        });
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.history),
+                      tooltip: 'Solved History',
+                      onPressed: () {
+                        setState(() {
+                          _isShowingHistory = true;
                         });
                       },
                     ),
@@ -251,18 +310,64 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: _isLoading
           ? _buildLoadingState()
-          : (_searchQuery.isNotEmpty
-              ? _buildSearchResultsView()
-              : (_filteredProblems.isEmpty
-                  ? _buildEmptyState()
-                  : _buildProblemsView())),
-            floatingActionButton: (_isCardFront && !_isSearching)
-                ? FloatingActionButton(
-                    onPressed: _showFilterBottomSheet,
-                    backgroundColor: Colors.blue.shade600,
-                    child: const Icon(Icons.filter_list, color: Colors.white),
-                  )
-                : null,
+          : (_isShowingHistory
+              ? ListView.separated(
+                  padding: const EdgeInsets.only(top: 80, left: 16, right: 16, bottom: 16),
+                  itemCount: _solvedHistory.length,
+                  separatorBuilder: (context, index) => const Divider(height: 1),
+                  itemBuilder: (context, idx) {
+                    final problem = _solvedHistory[idx];
+                    final solvedTime = _solvedTimestamps[problem.frontendId];
+                    return ListTile(
+                      title: Text(
+                        '#${problem.frontendId}  ${problem.title}',
+                        style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(problem.difficulty, style: theme.textTheme.bodySmall),
+                          if (solvedTime != null)
+                            Text('Solved: ${DateTime.parse(solvedTime).toLocal().toString().substring(0, 19)}', style: theme.textTheme.bodySmall?.copyWith(color: colorScheme.secondary)),
+                        ],
+                      ),
+                      trailing: Icon(Icons.arrow_forward_ios, size: 18, color: colorScheme.primary),
+                      onTap: () {
+                        final indexInAll = _problems.indexWhere((p) => p.frontendId == problem.frontendId);
+                        if (indexInAll != -1) {
+                          setState(() {
+                            _isShowingHistory = false;
+                            _selectedDifficulty = 'All';
+                            _selectedTopic = 'All';
+                            _filteredProblems = _problems;
+                            _currentIndex = indexInAll;
+                          });
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (_pageController.hasClients) {
+                              _pageController.animateToPage(
+                                indexInAll,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            }
+                          });
+                        }
+                      },
+                    );
+                  },
+                )
+              : (_searchQuery.isNotEmpty
+                  ? _buildSearchResultsView()
+                  : (_filteredProblems.isEmpty
+                      ? _buildEmptyState()
+                      : _buildProblemsView()))),
+      floatingActionButton: (_isCardFront && !_isSearching)
+          ? FloatingActionButton(
+              onPressed: _showFilterBottomSheet,
+              backgroundColor: Colors.blue.shade600,
+              child: const Icon(Icons.filter_list, color: Colors.white),
+            )
+          : null,
     );
   }
 
@@ -365,6 +470,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       _problems[mainIdx].isSolved = value;
                     }
                   });
+                  // Update solved_history in SharedPreferences and refresh history instantly
+                  () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    final solvedList = prefs.getStringList('solved_history') ?? [];
+                    final now = DateTime.now().toIso8601String();
+                    final entry = '${_filteredProblems[index].frontendId}|$now';
+                    // Remove any previous entry for this problem
+                    final filtered = solvedList.where((e) => !e.startsWith('${_filteredProblems[index].frontendId}|')).toList();
+                    if (value) {
+                      filtered.add(entry);
+                    }
+                    await prefs.setStringList('solved_history', filtered);
+                    await _loadSolvedHistory();
+                  }();
                 },
                 onCardSideChanged: (bool isFront) {
                   setState(() {
