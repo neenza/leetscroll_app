@@ -23,6 +23,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool _isSearching = false;
   bool _isShowingHistory = false;
+  int? _lastViewedIndex;
   List<LeetCodeProblem> _solvedHistory = [];
   Map<String, String> _solvedTimestamps = {};
   Future<void> _loadSolvedHistory() async {
@@ -227,6 +228,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPressed: () {
                         setState(() {
                           _isShowingHistory = false;
+                          if (_lastViewedIndex != null && _lastViewedIndex! < _filteredProblems.length) {
+                            _currentIndex = _lastViewedIndex!;
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              if (_pageController.hasClients) {
+                                _pageController.animateToPage(
+                                  _currentIndex,
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              }
+                            });
+                          }
                         });
                       },
                     ),
@@ -248,6 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       tooltip: 'Solved History',
                       onPressed: () {
                         setState(() {
+                          _lastViewedIndex = _currentIndex;
                           _isShowingHistory = true;
                         });
                       },
@@ -363,10 +377,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       : _buildProblemsView()))),
       floatingActionButton: (_isCardFront && !_isSearching)
           ? FloatingActionButton(
-              onPressed: _showFilterBottomSheet,
-              backgroundColor: Colors.blue.shade600,
-              child: const Icon(Icons.filter_list, color: Colors.white),
-            )
+          onPressed: _showFilterBottomSheet,
+          backgroundColor: Colors.blue.shade600,
+          child: const Icon(Icons.filter_list, color: Colors.white),
+        )
           : null,
     );
   }
