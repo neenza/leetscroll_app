@@ -46,11 +46,15 @@ class _HomeScreenState extends State<HomeScreen> {
           subtitle: Text(problem.difficulty, style: theme.textTheme.bodySmall),
           trailing: Icon(Icons.arrow_forward_ios, size: 18, color: colorScheme.primary),
         onTap: () {
-          final indexInFiltered = _filteredProblems.indexWhere((p) => p.frontendId == problem.frontendId);
-          if (indexInFiltered != -1) {
+          // Find the index in the full problems list to ensure correct mapping
+          final indexInAll = _problems.indexWhere((p) => p.frontendId == problem.frontendId);
+          if (indexInAll != -1) {
             setState(() {
               _isSearching = false;
-              _currentIndex = indexInFiltered;
+              _selectedDifficulty = 'All';
+              _selectedTopic = 'All';
+              _filteredProblems = _problems;
+              _currentIndex = indexInAll;
               _searchController.clear();
               _searchQuery = '';
               _searchResults.clear();
@@ -58,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (_pageController.hasClients) {
                 _pageController.animateToPage(
-                  indexInFiltered,
+                  indexInAll,
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOut,
                 );
@@ -212,7 +216,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               _searchQuery = value;
                               _searchResults = value.trim().isEmpty
                                   ? []
-                                  : _filteredProblems.where((p) =>
+                                  : _problems.where((p) =>
                                       p.frontendId.toLowerCase().contains(value.trim().toLowerCase()) ||
                                       p.title.toLowerCase().contains(value.trim().toLowerCase())
                                     ).toList();
