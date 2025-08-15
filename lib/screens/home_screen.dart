@@ -375,12 +375,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   : (_filteredProblems.isEmpty
                       ? _buildEmptyState()
                       : _buildProblemsView()))),
-      floatingActionButton: (_isCardFront && !_isSearching)
+      floatingActionButton: (_isCardFront && !_isSearching && !_isShowingHistory)
           ? FloatingActionButton(
-          onPressed: _showFilterBottomSheet,
-          backgroundColor: Colors.blue.shade600,
-          child: const Icon(Icons.filter_list, color: Colors.white),
-        )
+              onPressed: _showFilterBottomSheet,
+              backgroundColor: Colors.blue.shade600,
+              child: const Icon(Icons.filter_list, color: Colors.white),
+            )
           : null,
     );
   }
