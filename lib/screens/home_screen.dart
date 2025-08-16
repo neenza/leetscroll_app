@@ -69,29 +69,37 @@ class _HomeScreenState extends State<HomeScreen> {
           subtitle: Text(problem.difficulty, style: theme.textTheme.bodySmall),
           trailing: Icon(Icons.arrow_forward_ios, size: 18, color: colorScheme.primary),
         onTap: () {
-          // Find the index in the full problems list to ensure correct mapping
-          final indexInAll = _problems.indexWhere((p) => p.frontendId == problem.frontendId);
-          if (indexInAll != -1) {
+          // Clear search state first
+          setState(() {
+            _isSearching = false;
+            _searchController.clear();
+            _searchQuery = '';
+            _searchResults.clear();
+          });
+          
+          // Wait for search state to clear, then handle navigation
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            // Always reset to show all problems first - USE THE SAME REFERENCE AS THE SERVICE
             setState(() {
-              _isSearching = false;
               _selectedDifficulty = 'All';
               _selectedTopic = 'All';
-              _filteredProblems = _problems;
-              _currentIndex = indexInAll;
-              _searchController.clear();
-              _searchQuery = '';
-              _searchResults.clear();
+              _filteredProblems = ProblemsService.getAllProblems(); // Use the same sorted list
             });
+            
+            // Wait for filter reset, then navigate
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (_pageController.hasClients) {
-                _pageController.animateToPage(
-                  indexInAll,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                );
+              final correctIndex = _filteredProblems.indexWhere((p) => p.frontendId == problem.frontendId);
+              
+              if (correctIndex != -1) {
+                setState(() {
+                  _currentIndex = correctIndex;
+                });
+                if (_pageController.hasClients) {
+                  _pageController.jumpToPage(correctIndex);
+                }
               }
             });
-          }
+          });
         },
         );
       },
@@ -146,7 +154,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     setState(() {
       _problems = loadedProblems;
-      _filteredProblems = _problems;
+      _filteredProblems = loadedProblems; // Use the same reference
       _isLoading = false;
     });
   }
@@ -232,11 +240,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             _currentIndex = _lastViewedIndex!;
                             WidgetsBinding.instance.addPostFrameCallback((_) {
                               if (_pageController.hasClients) {
-                                _pageController.animateToPage(
-                                  _currentIndex,
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                );
+                                _pageController.jumpToPage(_currentIndex);
                               }
                             });
                           }
@@ -347,25 +351,25 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       trailing: Icon(Icons.arrow_forward_ios, size: 18, color: colorScheme.primary),
                       onTap: () {
-                        final indexInAll = _problems.indexWhere((p) => p.frontendId == problem.frontendId);
-                        if (indexInAll != -1) {
-                          setState(() {
-                            _isShowingHistory = false;
-                            _selectedDifficulty = 'All';
-                            _selectedTopic = 'All';
-                            _filteredProblems = _problems;
-                            _currentIndex = indexInAll;
-                          });
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                        setState(() {
+                          _isShowingHistory = false;
+                          _selectedDifficulty = 'All';
+                          _selectedTopic = 'All';
+                          _filteredProblems = ProblemsService.getAllProblems(); // Use the same sorted list
+                        });
+                        
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          final correctIndex = _filteredProblems.indexWhere((p) => p.frontendId == problem.frontendId);
+                          
+                          if (correctIndex != -1) {
+                            setState(() {
+                              _currentIndex = correctIndex;
+                            });
                             if (_pageController.hasClients) {
-                              _pageController.animateToPage(
-                                indexInAll,
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
+                              _pageController.jumpToPage(correctIndex);
                             }
-                          });
-                        }
+                          }
+                        });
                       },
                     );
                   },
@@ -469,10 +473,13 @@ class _HomeScreenState extends State<HomeScreen> {
           },
           itemCount: _filteredProblems.length,
           itemBuilder: (context, index) {
+            final currentProblem = _filteredProblems[index];
+            
             return Padding(
               padding: const EdgeInsets.only(top: 84),
               child: FlippableProblemCard(
-                problem: _filteredProblems[index],
+                key: ValueKey(currentProblem.frontendId),
+                problem: currentProblem,
                 onScrollToNext: _navigateToNextProblem,
                 onSolvedChanged: (bool value) {
                   setState(() {
